@@ -35,6 +35,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
      */
     private WifiActivity activity;
 
+    private WifiP2pManager.ActionListener peerListener;
+
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel,
                                        WifiActivity activity) {
         super();
@@ -51,6 +53,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 // Wifi P2P is enabled
+                // request available peers from the wifi p2p manager. This is an
+                // asynchronous call and the calling activity is notified with a
+                // callback on PeerListListener.onPeersAvailable()
+                if (wifiManager != null) {
+//                    wifiManager.requestPeers(channel, peerListener);
+                }
+
             } else {
                 // Wi-Fi P2P is not enabled
             }
