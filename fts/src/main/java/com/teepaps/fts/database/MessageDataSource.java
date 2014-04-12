@@ -1,13 +1,21 @@
 package com.teepaps.fts.database;
 
-import android.database.sqlite.SQLiteDatabase;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
 
-import javax.sql.DataSource;
+import com.teepaps.fts.models.Message;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ted on 3/25/14.
  */
 public class MessageDataSource extends AbstractDataSource {
+
+    //******** STATIC DATA MEMBERS ********
+    //*************************************
 
     /**
      * Name of table
@@ -15,41 +23,124 @@ public class MessageDataSource extends AbstractDataSource {
     private static final String TABLE_NAME      = "messages";
 
     /**
-     * Name of table
+     * Text from message
+     */
+    private static final String KEY_TEXT      = "text";
+
+    /**
+     * Unique ID of source
      */
     private static final String KEY_SOURCE      = "source";
 
     /**
-     * Name of table
+     * Unique ID of destination
      */
     private static final String KEY_DESTINATION = "destination";
 
     /**
-     * SQL statement to create table
+     * Name of table
      */
-    private static final String TABLE_CREATE    = "CREATE TABLE "
-            + TABLE_NAME + " ("
-            + DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
+    private static final String COLUMN_DEFS      =
+            DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
             + KEY_SOURCE + " TEXT "
-            + KEY_DESTINATION + " DESTINATION);";
+            + KEY_DESTINATION + " TEXT, "
+            + KEY_TEXT + " TEXT";
+
+    //******** NON-STATIC METHODS ********
+    //************************************
 
     /**
-     * SQL statement to upgrade table
+     * Constructor used to access database.
+     * @param context
      */
-    private static final String TABLE_UPGRADE = "DROP TABLE IF EXISTS " + TABLE_NAME;
-
-    /**
-     * Create the table
-     * @param db
-     */
-    public static void onCreate(SQLiteDatabase db) {
-        db.execSQL(TABLE_CREATE);
+    public MessageDataSource(Context context) {
+        super(context);
     }
 
     /**
-     * Upgrade table
-     * @param db
+     * Static constructor
+     * @param context
      */
-    public static void onUpgrade(SQLiteDatabase db) {
-        db.execSQL(TABLE_UPGRADE);
-    }}
+    public static MessageDataSource newInstance(Context context) {
+        return new MessageDataSource(context);
+    }
+
+    /**
+     * Create a new 'Message' entry in the database and return the new Peer created
+     * @param source
+     * @param destination
+     * @return
+     */
+    public Message createMessage(String source, String destination, byte[] text) {
+        ContentValues values = new ContentValues();
+        values.put(KEY_SOURCE, source);
+        values.put(KEY_DESTINATION, destination);
+        values.put(KEY_TEXT, text);
+
+        return (Message) create(values);
+    }
+
+    /**
+     * Retrieve a list of all the Peers in the database
+     * @return
+     */
+    public List<Message> getAllMessages() {
+        List<Message> messages = new ArrayList<Message>();
+
+        Cursor cursor = database.query(TABLE_NAME,
+                null, null, null, null, null, null);
+
+        cursor.moveToFirst();
+        while ((cursor != null) && !cursor.isAfterLast()) {
+            Message message = cursorToMessage(cursor);
+            messages.add(message);
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return messages;
+    }
+
+    /**
+     * Get all message from a specific source.
+     * @param source
+     * @return
+     */
+    public Cursor getConversation(String source) {
+        return database.query(TABLE_NAME, null,
+                MessageDataSource.KEY_SOURCE + "=" + source, null, null, null, null);
+    }
+
+    /**
+     * Wrapper to extract a 'Message' from a cursor
+     * @param cursor
+     */
+    public Message cursorToMessage(Cursor cursor) {
+        return (Message) cursorToModel(cursor);
+    }
+
+    /**
+     * Extract a 'Message' from a cursor
+     * @param cursor
+     */
+     @Override
+    protected DataModel cursorToModel(Cursor cursor) {
+        Message message = new Message();
+        message.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
+        message.setSource(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
+        message.setSource(cursor.getString(cursor.getColumnIndex(KEY_SOURCE)));
+        message.setDestination(cursor.getString(cursor.getColumnIndex(KEY_DESTINATION)));
+
+        return message;
+    }
+
+    @Override
+    protected String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    protected String getColumnDefs() {
+        return COLUMN_DEFS;
+    }
+}

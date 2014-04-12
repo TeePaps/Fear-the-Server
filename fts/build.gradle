@@ -19,6 +19,9 @@ android {
 }
 
 dependencies {
+
     compile 'com.android.support:appcompat-v7:+'
-    compile 'com.android.support:support-v4:18.0.0'
+    compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+    compile 'com.madgag.spongycastle:prov:1.50.0.0'
+
 }

@@ -1,5 +1,6 @@
 package com.teepaps.fts.database;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -13,72 +14,47 @@ import java.util.List;
  */
 public abstract class AbstractDataSource {
 
-    //******** STATIC DATA MEMBERS ********
-    //*************************************
-
-    /**
-     * Name of table
-     */
-    private static final String TABLE_NAME      = "peers";
-
-    /**
-     * Name of table
-     */
-    private static final String KEY_SHARED_KEY  = "shared_key";
-
-    /**
-     * Name of table
-     */
-    private static final String KEY_PEER_ID     = "peer_id";
-
-    /**
-     * SQL statement to create table
-     */
-    private static final String TABLE_CREATE    = "CREATE TABLE "
-            + TABLE_NAME + " ("
-            + DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
-            + KEY_SHARED_KEY + " TEXT "
-            + KEY_PEER_ID + " INTEGER);";
-
-    /**
-     * SQL statement to upgrade table
-     */
-    private static final String TABLE_UPGRADE = "DROP TABLE IF EXISTS " + TABLE_NAME;
-
     //******** NON-STATIC DATA MEMBERS ********
     //*****************************************
 
     /**
-     * Datebase object
+     * Database object
      */
-    private SQLiteDatabase database;
+    protected SQLiteDatabase database;
 
     /**
      * Helper for opening, creating, upgrading, etc.
      */
-    private DatabaseHelper dbHelper;
-
-    //******** STATIC METHODS ********
-    //********************************
+    protected DatabaseHelper dbHelper;
 
     /**
      * Create the table
      * @param db
      */
-    public static void onCreate(SQLiteDatabase db) {
-        db.execSQL(TABLE_CREATE);
+    public void onCreate(SQLiteDatabase db) {
+        String sqlStatement = "CREATE TABLE "
+            + getTableName() + " (" + getColumnDefs() + ");";
+
+        db.execSQL(sqlStatement);
     }
 
     /**
      * Upgrade table
      * @param db
      */
-    public static void onUpgrade(SQLiteDatabase db) {
-        db.execSQL(TABLE_UPGRADE);
+    public void onUpgrade(SQLiteDatabase db) {
+        String sqlStatement = "DROP TABLE IF EXISTS " + getTableName();
+        db.execSQL(sqlStatement);
     }
 
     //******** NON-STATIC METHODS ********
     //************************************
+
+    /**
+     * Default constructor
+     */
+    public AbstractDataSource() {
+    }
 
     /**
      * Constructor that instaniates a dbHelper
@@ -104,10 +80,19 @@ public abstract class AbstractDataSource {
     }
 
     /**
-     * Create a new DataModel entry in the database and return the new Peer created
-     * @return
+     * Create a new 'DataModel' entry in the database.
+     * @return the new 'DataModel' created.
      */
-    protected abstract DataModel create();
+    public DataModel create(ContentValues contentValues) {
+        long insertId = database.insert(getTableName(), null, contentValues);
+        Cursor cursor = database.query(getTableName(),
+                null, DatabaseHelper.KEY_ROW_ID + " = " + insertId, null,
+                null, null, null);
+        cursor.moveToFirst();
+        DataModel newModel = cursorToModel(cursor);
+        cursor.close();
+        return newModel;
+    }
 
     /**
      * Delete a peer entry from the database
@@ -115,7 +100,7 @@ public abstract class AbstractDataSource {
      */
     public void delete(DataModel model) {
         long id = model.getRowId();
-        database.delete(TABLE_NAME, DatabaseHelper.KEY_ROW_ID
+        database.delete(getTableName(), DatabaseHelper.KEY_ROW_ID
                 + " = " + id, null);
     }
 
@@ -126,7 +111,7 @@ public abstract class AbstractDataSource {
     public List<DataModel> getAll() {
         List<DataModel> models = new ArrayList<DataModel>();
 
-        Cursor cursor = database.query(TABLE_NAME,
+        Cursor cursor = database.query(getTableName(),
                 null, null, null, null, null, null);
 
         cursor.moveToFirst();
@@ -146,6 +131,19 @@ public abstract class AbstractDataSource {
      * @param cursor
      */
     protected abstract DataModel cursorToModel(Cursor cursor);
+
+    //******** GETTERS ********
+    //*************************
+
+    /**
+     * @return the static "TABLE_NAME" defined in the children
+     */
+    protected abstract String getTableName();
+
+    /**
+     * @return the static "TABLE_NAME" defined in the children
+     */
+    protected abstract String getColumnDefs();
 }
 
 

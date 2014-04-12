@@ -6,14 +6,15 @@ import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 
+import com.teepaps.fts.R;
 import com.teepaps.fts.utils.WiFiDirectBroadcastReceiver;
 
 /**
  * Created by ted on 3/22/14.
  */
-public class WifiActivity extends Activity
-        implements WifiP2pManager.ActionListener
-{
+public class WifiActivity extends Activity implements WifiP2pManager.ActionListener {
+
+    private static final String TAG = "WifiActivity";
 
     /**
      * Wifi manager to manage P2P connections
@@ -33,37 +34,53 @@ public class WifiActivity extends Activity
     /**
      * Same intents as broadcast receiver
      */
-    IntentFilter intentFilter;
+    private IntentFilter intentFilter;
 
+    /**
+     * Is Wifi P2P enbabled for this device?
+     */
+    private boolean isWifiP2pEnabled;
+
+    /**
+     * Should we retry the channel?
+     */
+    private boolean retryChannel;
+
+    /**
+     * @param isWifiP2pEnabled the isWifiP2pEnabled to set
+     */
+    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
+        this.isWifiP2pEnabled = isWifiP2pEnabled;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
 
-        wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = wifiManager.initialize(this, getMainLooper(), null);
-        receiver = new WiFiDirectBroadcastReceiver(wifiManager, channel, this);
-
-        // Create an intent filter and add the same intents that your broadcast receiver checks for
+        // add necessary intent values to be matched.
         intentFilter = new IntentFilter();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-
+        wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = wifiManager.initialize(this, getMainLooper(), null);
     }
 
-    /* register the broadcast receiver with the intent values to be matched */
+    /**
+     * register the BroadcastReceiver with the intent values to be matched
+     */
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
+        receiver = new WiFiDirectBroadcastReceiver(wifiManager, channel, this);
         registerReceiver(receiver, intentFilter);
     }
 
-    /* unregister the broadcast receiver */
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         unregisterReceiver(receiver);
     }
@@ -74,7 +91,7 @@ public class WifiActivity extends Activity
     }
 
     @Override
-    public void onFailure(int reasonCode) {
+    public void onFailure(int i) {
 
     }
 }

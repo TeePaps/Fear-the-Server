@@ -3,10 +3,9 @@ package com.teepaps.fts.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.teepaps.fts.core.Peer;
+import com.teepaps.fts.models.Peer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,28 +24,28 @@ public class PeerDataSource extends AbstractDataSource {
     private static final String TABLE_NAME      = "peers";
 
     /**
-     * Name of table
+     * Shared key for encryption
      */
     private static final String KEY_SHARED_KEY  = "shared_key";
 
     /**
-     * Name of table
+     * Unique ID of Peer
      */
     private static final String KEY_PEER_ID     = "peer_id";
 
     /**
-     * SQL statement to create table
+     * Is a connection to this peer open
      */
-    private static final String TABLE_CREATE    = "CREATE TABLE "
-            + TABLE_NAME + " ("
-            + DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
-            + KEY_SHARED_KEY + " TEXT "
-            + KEY_PEER_ID + " INTEGER);";
+    private static final String KEY_IS_CONNECTED = "is_connected";
 
     /**
-     * SQL statement to upgrade table
+     * SQL statement to create table
      */
-    private static final String TABLE_UPGRADE = "DROP TABLE IF EXISTS " + TABLE_NAME;
+    private static final String COLUMN_DEFS    =
+            DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
+            + KEY_SHARED_KEY + " TEXT "
+            + KEY_PEER_ID + " TEXT "
+            + KEY_IS_CONNECTED + " BOOLEAN NOT NULL CHECK (" + KEY_IS_CONNECTED + " IN (0,1))";
 
     //******** NON-STATIC DATA MEMBERS ********
     //*****************************************
@@ -61,35 +60,28 @@ public class PeerDataSource extends AbstractDataSource {
      */
     private DatabaseHelper dbHelper;
 
-    //******** STATIC METHODS ********
-    //********************************
-
-    /**
-     * Create the table
-     * @param db
-     */
-    public static void onCreate(SQLiteDatabase db) {
-        db.execSQL(TABLE_CREATE);
-    }
-
-    /**
-     * Upgrade table
-     * @param db
-     */
-    public static void onUpgrade(SQLiteDatabase db) {
-        db.execSQL(TABLE_UPGRADE);
-    }
-
     //******** NON-STATIC METHODS ********
     //************************************
 
-    @Override
-    protected DataModel create() {
-        return null;
+    /**
+     * Constructor used to access database.
+     * @param context
+     */
+    public PeerDataSource(Context context) {
+        super(context);
+    }
+
+    /**
+     * Static constructor
+     * @param context
+     */
+    public static PeerDataSource newInstance(Context context) {
+        return new PeerDataSource(context);
     }
 
     /**
      * Create a new Peer entry in the database and return the new Peer created
+     *
      * @param peerId
      * @param sharedKey
      * @return
@@ -98,28 +90,13 @@ public class PeerDataSource extends AbstractDataSource {
         ContentValues values = new ContentValues();
         values.put(KEY_PEER_ID, peerId);
         values.put(KEY_SHARED_KEY, sharedKey);
-        long insertId = database.insert(TABLE_NAME, null, values);
-        Cursor cursor = database.query(TABLE_NAME,
-                null, DatabaseHelper.KEY_ROW_ID + " = " + insertId, null,
-                null, null, null);
-        cursor.moveToFirst();
-        Peer newPeer = cursorToPeer(cursor);
-        cursor.close();
-        return newPeer;
-    }
 
-    /**
-     * Delete a peer entry from the database
-     * @param peer
-     */
-    public void deletePeer(Peer peer) {
-        long id = peer.getRowId();
-        database.delete(TABLE_NAME, DatabaseHelper.KEY_ROW_ID
-                + " = " + id, null);
+        return (Peer) create(values);
     }
 
     /**
      * Retrieve a list of all the Peers in the database
+     *
      * @return
      */
     public List<Peer> getAllPeers() {
@@ -151,16 +128,28 @@ public class PeerDataSource extends AbstractDataSource {
 
     /**
      * Wrapper to extract a Peer from a cursor
+     *
      * @param cursor
      */
-     @Override
+    @Override
     protected DataModel cursorToModel(Cursor cursor) {
         Peer peer = new Peer();
         peer.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
-        peer.setPeerId(cursor.getLong(cursor.getColumnIndex(KEY_PEER_ID)));
+        peer.setPeerId(cursor.getString(cursor.getColumnIndex(KEY_PEER_ID)));
         peer.setSharedKey(cursor.getString(cursor.getColumnIndex(KEY_SHARED_KEY)));
+        peer.setConnected(cursor.getInt(cursor.getColumnIndex(KEY_IS_CONNECTED)));
 
         return peer;
+    }
+
+    @Override
+    protected String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    protected String getColumnDefs() {
+        return COLUMN_DEFS;
     }
 
 }

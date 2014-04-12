@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Fear the Server.iml" filepath="$PROJECT_DIR$/Fear the Server.iml" />
       <module fileurl="file://$PROJECT_DIR$/MyApplication.iml" filepath="$PROJECT_DIR$/MyApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/fts/fts.iml" filepath="$PROJECT_DIR$/fts/fts.iml" />
     </modules>
