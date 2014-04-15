@@ -1,4 +1,4 @@
-package com.teepaps.fts.database;
+package com.teepaps.fts.database.models;
 
 /**
  * Created by ted on 3/25/14.

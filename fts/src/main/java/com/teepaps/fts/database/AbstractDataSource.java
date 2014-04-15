@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.teepaps.fts.database.models.DataModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +16,8 @@ import java.util.List;
  * Created by ted on 3/25/14.
  */
 public abstract class AbstractDataSource {
+
+    private static final String TAG = AbstractDataSource.class.getSimpleName();
 
     //******** NON-STATIC DATA MEMBERS ********
     //*****************************************
@@ -34,6 +39,7 @@ public abstract class AbstractDataSource {
     public void onCreate(SQLiteDatabase db) {
         String sqlStatement = "CREATE TABLE "
             + getTableName() + " (" + getColumnDefs() + ");";
+        Log.d(TAG, sqlStatement);
 
         db.execSQL(sqlStatement);
     }
@@ -88,10 +94,14 @@ public abstract class AbstractDataSource {
         Cursor cursor = database.query(getTableName(),
                 null, DatabaseHelper.KEY_ROW_ID + " = " + insertId, null,
                 null, null, null);
-        cursor.moveToFirst();
-        DataModel newModel = cursorToModel(cursor);
+        if (cursor.moveToFirst()) {
+            DataModel newModel = cursorToModel(cursor);
+            return newModel;
+        }
         cursor.close();
-        return newModel;
+
+        return null;
+//        return newModel;
     }
 
     /**

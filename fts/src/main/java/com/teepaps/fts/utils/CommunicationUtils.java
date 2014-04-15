@@ -4,8 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.teepaps.fts.database.MessageDataSource;
-import com.teepaps.fts.models.Message;
-import com.teepaps.fts.models.Peer;
+import com.teepaps.fts.database.models.Message;
+import com.teepaps.fts.database.models.Peer;
 
 /**
  * Created by ted on 3/26/14.

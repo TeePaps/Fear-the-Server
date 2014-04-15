@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
-import com.teepaps.fts.models.Message;
+import com.teepaps.fts.database.models.DataModel;
+import com.teepaps.fts.database.models.Message;
+import com.teepaps.fts.utils.PrefsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,7 @@ public class MessageDataSource extends AbstractDataSource {
     /**
      * Text from message
      */
-    private static final String KEY_TEXT      = "text";
+    private static final String KEY_TEXT        = "text";
 
     /**
      * Unique ID of source
@@ -42,7 +44,7 @@ public class MessageDataSource extends AbstractDataSource {
      */
     private static final String COLUMN_DEFS      =
             DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
-            + KEY_SOURCE + " TEXT "
+            + KEY_SOURCE + " TEXT, "
             + KEY_DESTINATION + " TEXT, "
             + KEY_TEXT + " TEXT";
 
@@ -107,8 +109,7 @@ public class MessageDataSource extends AbstractDataSource {
      * @return
      */
     public Cursor getConversation(String source) {
-        return database.query(TABLE_NAME, null,
-                MessageDataSource.KEY_SOURCE + "=" + source, null, null, null, null);
+        return database.query(TABLE_NAME, null, KEY_SOURCE + "=" + source, null, null, null, null);
     }
 
     /**
@@ -142,5 +143,23 @@ public class MessageDataSource extends AbstractDataSource {
     @Override
     protected String getColumnDefs() {
         return COLUMN_DEFS;
+    }
+
+    /**
+     * Check if the message is outgoing using the cursor
+     * @param context
+     * @param cursor
+     * @return
+     */
+    public static boolean isOutgoing(Context context, Cursor cursor) {
+        if(cursor.moveToFirst()) {
+            String source = cursor.getString(cursor.getColumnIndex(KEY_SOURCE));
+            // If source is not the user
+            if (!source.equals(PrefsUtils.getString(context, PrefsUtils.KEY_MAC, null))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

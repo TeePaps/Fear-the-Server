@@ -1,9 +1,10 @@
-package com.teepaps.fts.models;
+package com.teepaps.fts.database.models;
 
 import android.content.Context;
 
-import com.teepaps.fts.database.DataModel;
+import com.google.common.io.BaseEncoding;
 import com.teepaps.fts.database.MessageDataSource;
+import com.teepaps.fts.utils.ConversionUtils;
 
 /**
  * Handles message passing to the user and from the user. Abstracts away the
@@ -36,9 +37,14 @@ public class Peer extends DataModel {
     private String sharedKey;
 
     /**
-     * Is a connection to this 'Peer' open
+     * Is a connection to this 'Peer' open?
      */
     private boolean isConnected;
+
+    /**
+     * Has this 'Peer' sent or received messages previously?
+     */
+    private boolean hasChatted;
 
     /**
      * Send a message to this peer.
@@ -67,6 +73,18 @@ public class Peer extends DataModel {
         return peerId;
     }
 
+    public String getSharedKey() {
+        return sharedKey;
+    }
+
+    /**
+     * Decodes the base64 representation of the key
+     * @return
+     */
+    public byte[] getSharedKeyBytes() {
+        return BaseEncoding.base64().decode(getSharedKey());
+    }
+
     //******** SETTERS ********
     //*************************
 
@@ -78,8 +96,16 @@ public class Peer extends DataModel {
         this.sharedKey = sharedKey;
     }
 
+    public void setSharedKey(byte[] key) {
+        BaseEncoding.base64().encode(key);
+    }
+
     public void setConnected(boolean isConnected) {
         this.isConnected = isConnected;
+    }
+
+    public void setChatted(boolean hasChatted) {
+        this.hasChatted = hasChatted;
     }
 
     /**
@@ -87,13 +113,14 @@ public class Peer extends DataModel {
      * @param isConnected
      */
     public void setConnected(int isConnected) {
-        if (isConnected > 0) {
-            setConnected(true);
-        }
-        else {
-            setConnected(false);
-        }
+        setConnected(ConversionUtils.intToBoolean(isConnected));
     }
 
-
+    /**
+     * Allows to write to this model using SQLite's INTEGER value.
+     * @param isConnected
+     */
+    public void setChatted(int isConnected) {
+        setChatted(ConversionUtils.intToBoolean(isConnected));
+    }
 }

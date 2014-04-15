@@ -1,13 +1,15 @@
-package com.teepaps.fts.models;
+package com.teepaps.fts.database.models;
 
-import com.teepaps.fts.database.DataModel;
+import android.util.Log;
 
-import java.text.SimpleDateFormat;
+import com.google.common.io.BaseEncoding;
 
 /**
  * Created by ted on 3/25/14.
  */
 public class Message extends DataModel {
+
+    private static final String TAG = Message.class.getSimpleName();
 
     /**
      * Text from message
@@ -24,6 +26,10 @@ public class Message extends DataModel {
      */
     private String destination;
 
+    /**
+     * Cipher text from message sent
+     */
+    private String cipherText;
     /**
      * Time the message was sent, in epoch time
      */
@@ -50,10 +56,28 @@ public class Message extends DataModel {
         return destination;
     }
 
-    public String getSentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
-        String date = sdf.format(sentTime);
-        return date;
+    public long getSentTime() {
+        return sentTime;
+    }
+
+    public String getCipherText() {
+        return cipherText;
+    }
+
+    /**
+     * Get a byte[] representation of the cipher text message
+     * @return
+     */
+    public byte[] getCipherBytes() {
+        byte[] cipherBytes = null;
+
+        try {
+            cipherBytes = BaseEncoding.base64().decode(getCipherText());
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Failed to decode cipher text string into bytes");
+        }
+
+        return cipherBytes;
     }
 
     //******** SETTERS ********

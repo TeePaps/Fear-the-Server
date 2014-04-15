@@ -6,7 +6,6 @@ import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 
-import com.teepaps.fts.R;
 import com.teepaps.fts.utils.WiFiDirectBroadcastReceiver;
 
 /**
@@ -56,7 +55,7 @@ public class WifiActivity extends Activity implements WifiP2pManager.ActionListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+//        setContentView(R.layout.main);
 
         // add necessary intent values to be matched.
         intentFilter = new IntentFilter();
@@ -75,8 +74,8 @@ public class WifiActivity extends Activity implements WifiP2pManager.ActionListe
     @Override
     public void onResume() {
         super.onResume();
-        receiver = new WiFiDirectBroadcastReceiver(wifiManager, channel, this);
-        registerReceiver(receiver, intentFilter);
+//        receiver = new WiFiDirectBroadcastReceiver(wifiManager, channel, this);
+//        registerReceiver(receiver, intentFilter);
     }
 
     @Override
