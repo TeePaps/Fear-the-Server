@@ -5,12 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import com.teepaps.fts.R;
 import com.teepaps.fts.database.models.Peer;
 
 /**
- * Shows all previous conversations with different peers
+ * Shows all peers that are in range to communicate with.
  * Created by ted on 4/13/14.
  */
 public class PeerListAdapter extends ArrayAdapter<Peer> {
@@ -38,6 +39,14 @@ public class PeerListAdapter extends ArrayAdapter<Peer> {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.peer_list_item, null);
         }
+
+        TextView tvPeerName = (TextView) convertView.findViewById(R.id.tv_peer_name);
+        TextView tvPeerId = (TextView) convertView.findViewById(R.id.tv_peer_id);
+        TextView tvPeerCost = (TextView) convertView.findViewById(R.id.tv_peer_cost);
+
+        tvPeerName.setText(getItem(position).getPeerName());
+        tvPeerId.setText(getItem(position).getPeerId());
+        tvPeerCost.setText(getItem(position).getCost());
 
         return convertView;
     }

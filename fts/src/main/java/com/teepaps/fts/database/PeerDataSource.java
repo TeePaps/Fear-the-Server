@@ -21,22 +21,32 @@ public class PeerDataSource extends AbstractDataSource {
     /**
      * Name of table
      */
-    private static final String TABLE_NAME      = "peers";
+    private static final String TABLE_NAME          = "peers";
 
     /**
-     * Shared key for encryption
+     * User visible name of the Peer
      */
-    private static final String KEY_SHARED_KEY  = "shared_key";
+    private static final String KEY_PEER_NAME       = "peer_name";
 
     /**
      * Unique ID of Peer
      */
-    private static final String KEY_PEER_ID     = "peer_id";
+    private static final String KEY_PEER_ID         = "peer_id";
+
+    /**
+     * Shared key for encryption
+     */
+    private static final String KEY_SHARED_KEY      = "shared_key";
+
+    /**
+     * What is the cost (how many hops) to get to the peer.
+     */
+    private static final String KEY_COST            = "cost";
 
     /**
      * Is a connection to this peer open
      */
-    private static final String KEY_IS_CONNECTED = "is_connected";
+    private static final String KEY_IS_CONNECTED    = "is_connected";
 
     /**
      * Has this peer sent or received any messages previously?
@@ -48,8 +58,10 @@ public class PeerDataSource extends AbstractDataSource {
      */
     private static final String COLUMN_DEFS    =
             DatabaseHelper.KEY_ROW_ID + " INTEGER PRIMARY KEY, "
-            + KEY_SHARED_KEY + " TEXT, "
+            + KEY_PEER_NAME + " TEXT, "
             + KEY_PEER_ID + " TEXT, "
+            + KEY_SHARED_KEY + " TEXT, "
+            + KEY_COST + " INTEGER, "
             + KEY_IS_CONNECTED + " BOOLEAN NOT NULL CHECK (" + KEY_IS_CONNECTED + " IN (0,1)), "
             + KEY_HAS_CHATTED + " BOOLEAN NOT NULL CHECK (" + KEY_HAS_CHATTED + " IN (0,1))";
 
@@ -79,10 +91,12 @@ public class PeerDataSource extends AbstractDataSource {
      * @param sharedKey
      * @return
      */
-    public Peer createPeer(String peerId, String sharedKey) {
+    public Peer createPeer(String peerName, String peerId, String sharedKey) {
         ContentValues values = new ContentValues();
+        values.put(KEY_PEER_ID, peerName);
         values.put(KEY_PEER_ID, peerId);
         values.put(KEY_SHARED_KEY, sharedKey);
+        values.put(KEY_COST, 1);
         values.put(KEY_IS_CONNECTED, 0);
         values.put(KEY_HAS_CHATTED, 0);
 
@@ -97,8 +111,7 @@ public class PeerDataSource extends AbstractDataSource {
     public List<Peer> getAllPeers() {
         List<Peer> peers = new ArrayList<Peer>();
 
-        Cursor cursor = database.query(TABLE_NAME,
-                null, null, null, null, null, null);
+        Cursor cursor = database.query(TABLE_NAME, null, null, null, null, null, null);
 
         cursor.moveToFirst();
         while ((cursor != null) && !cursor.isAfterLast()) {
@@ -139,8 +152,10 @@ public class PeerDataSource extends AbstractDataSource {
     protected DataModel cursorToModel(Cursor cursor) {
         Peer peer = new Peer();
         peer.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
+        peer.setPeerId(cursor.getString(cursor.getColumnIndex(KEY_PEER_NAME)));
         peer.setPeerId(cursor.getString(cursor.getColumnIndex(KEY_PEER_ID)));
         peer.setSharedKey(cursor.getString(cursor.getColumnIndex(KEY_SHARED_KEY)));
+        peer.setCost(cursor.getInt(cursor.getColumnIndex(KEY_COST)));
         peer.setConnected(cursor.getInt(cursor.getColumnIndex(KEY_IS_CONNECTED)));
         peer.setChatted(cursor.getInt(cursor.getColumnIndex(KEY_HAS_CHATTED)));
 
@@ -161,9 +176,20 @@ public class PeerDataSource extends AbstractDataSource {
      * Returns a cursor for all peers than have previously sent or recieved a message.
      * @return
      */
+    public Cursor getConnectedPeers() {
+        open();
+        this.createPeer("Jack", "746000444", "anotherkey");
+        return database.query(TABLE_NAME, null, KEY_COST + " > 0",
+                null, null, null, null);
+    }
+
+    /**
+     * Returns a cursor for all peers than have previously sent or recieved a message.
+     * @return
+     */
     public Cursor getChattedPeers() {
         open();
-        this.createPeer("my name", "thisisakey");
+        this.createPeer("Ted", "1242674645", "thisisakey");
         return database.query(TABLE_NAME, null, KEY_HAS_CHATTED + " = 1",
                 null, null, null, null);
     }
@@ -174,8 +200,8 @@ public class PeerDataSource extends AbstractDataSource {
      */
     public Cursor getVisiblePeers() {
         open();
-        this.createPeer("my name", "thisisakey");
-        return database.query(TABLE_NAME, null, DatabaseHelper.KEY_ROW_ID + ">0",
+        this.createPeer("Joe", "66345932", "keykeykey");
+        return database.query(TABLE_NAME, null, DatabaseHelper.KEY_ROW_ID + " > 0",
                 null, null, null, null);
 
     }

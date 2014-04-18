@@ -26,6 +26,12 @@ public class Peer extends DataModel {
     //*****************************************
 
     /**
+     * User visible name of peer˜
+
+     */
+    private String peerName;
+
+    /**
      * Unique ID of the Peer so that the application knows to communicate with
      * the proper Peer.
      */
@@ -35,6 +41,11 @@ public class Peer extends DataModel {
      * Shared key between the user and peer to encrypt/decrypt messages.
      */
     private String sharedKey;
+
+   /**
+     * What is the cost (how many hops) to get to the peer.
+     */
+    private int cost;
 
     /**
      * Is a connection to this 'Peer' open?
@@ -62,12 +73,15 @@ public class Peer extends DataModel {
      */
     public String receive() {
         String message = null;
-
         return message;
     }
 
     //******** GETTERS ********
     //*************************
+
+    public String getPeerName() {
+        return peerName;
+    }
 
     public String getPeerId() {
         return peerId;
@@ -77,7 +91,12 @@ public class Peer extends DataModel {
         return sharedKey;
     }
 
-    /**
+    public int getCost() {
+
+        return cost;
+    }
+
+     /**
      * Decodes the base64 representation of the key
      * @return
      */
@@ -87,6 +106,10 @@ public class Peer extends DataModel {
 
     //******** SETTERS ********
     //*************************
+
+    public void setPeerName(String peerName) {
+        this.peerName = peerName;
+    }
 
     public void setPeerId(String peerId) {
         this.peerId = peerId;
@@ -98,6 +121,10 @@ public class Peer extends DataModel {
 
     public void setSharedKey(byte[] key) {
         BaseEncoding.base64().encode(key);
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
     }
 
     public void setConnected(boolean isConnected) {

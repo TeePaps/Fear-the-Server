@@ -13,6 +13,8 @@ public class MainActivity extends Activity
         implements PeerListFragment.PeerSelectedListener,
                 ConversationListFragment.ConversationSelectedListener
 {
+    public static final String TAG = MainActivity.class.getSimpleName();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

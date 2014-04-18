@@ -6,6 +6,11 @@ import android.util.Log;
 import com.teepaps.fts.database.MessageDataSource;
 import com.teepaps.fts.database.models.Message;
 import com.teepaps.fts.database.models.Peer;
+import com.teepaps.fts.ui.MainActivity;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by ted on 3/26/14.
@@ -34,5 +39,28 @@ public class CommunicationUtils {
         // Send the message along
         send(message);
 
+    }
+
+    /**
+     * Copies bytes from the inputStream to the outputStream.
+     * @param inputStream
+     * @param out
+     * @return
+     */
+    public static boolean copyFile(InputStream inputStream, OutputStream out) {
+        byte buf[] = new byte[1024];
+        int len;
+        try {
+            while ((len = inputStream.read(buf)) != -1) {
+                out.write(buf, 0, len);
+
+            }
+            out.close();
+            inputStream.close();
+        } catch (IOException e) {
+            Log.d(MainActivity.TAG, e.toString());
+            return false;
+        }
+        return true;
     }
 }

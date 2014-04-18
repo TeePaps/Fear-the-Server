@@ -22,6 +22,7 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:+'
     compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+    compile 'org.roboguice:roboguice:2.0'
     compile 'com.madgag.spongycastle:prov:1.50.0.0'
 
 }
