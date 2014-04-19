@@ -15,8 +15,7 @@ public class ConversationActivity extends Activity
 
 
     @Override
-    public void setComposeText(String text)
-    {
+    public void setComposeText(String text) {
 
     }
     @Override

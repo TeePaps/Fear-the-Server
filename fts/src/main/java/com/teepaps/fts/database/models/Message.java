@@ -4,10 +4,12 @@ import android.util.Log;
 
 import com.google.common.io.BaseEncoding;
 
+import java.io.Serializable;
+
 /**
  * Created by ted on 3/25/14.
  */
-public class Message extends DataModel {
+public class Message extends DataModel implements Serializable {
 
     private static final String TAG = Message.class.getSimpleName();
 

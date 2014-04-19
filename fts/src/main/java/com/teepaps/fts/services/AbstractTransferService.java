@@ -2,7 +2,8 @@ package com.teepaps.fts.services;
 
 import android.app.IntentService;
 
-import com.teepaps.fts.routing.RoutingTable;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * Service that waits for clients to connect. When they do, this host will send it's routing table
@@ -15,32 +16,46 @@ public abstract class AbstractTransferService extends IntentService {
     /**
      * Key for host to connect to with the socket
      */
-    private static final String EXTRA_HOST              = "host";
+    protected static final String EXTRA_HOST              = "host";
 
     /**
      * Key for port to connect the socket on
      */
-    private static final String EXTRA_PORT              = "port";
+    protected static final String EXTRA_PORT              = "port";
 
     /**
      * Notification to send back to the activity that registered
      */
-    private static final String BROADCAST_NOTIFICATION  = "default_notification";
+    protected static final String BROADCAST_NOTIFICATION  = "default_notification";
 
     /**
      * Type of transfer service
      */
-    private int type;
+    protected int type;
 
     /**
      * Host to transfer the routing table to
      */
-    private String host;
+    protected String host;
 
     /**
-     * Routing table to return as a result
+     * Port to connect the socket on
      */
-    private RoutingTable routingTable;
+    protected int port;
+    /**
+     * Socket from the server
+     */
+    protected ServerSocket serverSocket;
+
+    /**
+     * Socket for the server to accept a client
+     */
+    protected Socket client;
+
+    /**
+     * Socket for the client to connect to the server on
+     */
+    protected Socket socket;
 
     public AbstractTransferService(String name) {
         super(name);

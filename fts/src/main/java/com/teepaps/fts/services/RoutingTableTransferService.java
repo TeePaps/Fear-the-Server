@@ -67,6 +67,8 @@ public class RoutingTableTransferService extends AbstractTransferService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        host    = intent.getStringExtra(EXTRA_HOST);
+        port    = intent.getIntExtra(EXTRA_PORT, 8888);
         routingTable = (RoutingTable) intent.getSerializableExtra(EXTRA_ROUTING_TABLE);
 
         // Send or receive a Routing Table
@@ -87,7 +89,7 @@ public class RoutingTableTransferService extends AbstractTransferService {
         try {
             // Create a server socket and wait for client connections. This call blocks until a
             // connection is accepted from a client
-            ServerSocket serverSocket = new ServerSocket(8888);
+            ServerSocket serverSocket = new ServerSocket(port);
             Socket client = serverSocket.accept();
 
 
@@ -113,7 +115,6 @@ public class RoutingTableTransferService extends AbstractTransferService {
      */
     protected void doClientWork() {
 
-        int port = 8888;
         Socket socket = new Socket();
         byte buf[]  = new byte[1024];
 

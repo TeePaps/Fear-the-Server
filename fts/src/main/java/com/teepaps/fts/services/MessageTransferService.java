@@ -3,7 +3,7 @@ package com.teepaps.fts.services;
 import android.content.Intent;
 import android.util.Log;
 
-import com.teepaps.fts.routing.RoutingTable;
+import com.teepaps.fts.database.models.Message;
 import com.teepaps.fts.ui.MainActivity;
 
 import java.io.FileNotFoundException;
@@ -15,8 +15,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Service that waits for clients to connect. When they do, this host will send it's routing table
- * to the connected client.
+ * Service that either:<br>
+ *      1) Server: waits for a client to connect, then continually waits for objects to be sent<br>
+ *      2) Client: sends one message to the host and port passed to the intent.
  *
  * @author Created by ted on 4/18/14.
  */
@@ -35,7 +36,7 @@ public class MessageTransferService extends AbstractTransferService {
     /**
      * Key for routing table object serializable extra
      */
-    private static final String EXTRA_ROUTING_TABLE     = "routing_table";
+    private static final String EXTRA_MESSAGE           = "message";
 
     /**
      * Notification to send back to the activity that registered
@@ -43,88 +44,91 @@ public class MessageTransferService extends AbstractTransferService {
     private static final String BROADCAST_NOTIFICATION  = "routing_table";
 
     /**
-     * Type of transfer service
-     */
-    private int type;
-
-    /**
-     * Host to transfer the routing table to
-     */
-    private String host;
-
-    /**
-     * Routing table to return as a result
-     */
-    private RoutingTable routingTable;
-
-    /**
      * Is this service cancelled?
      */
     private boolean isCancelled;
 
+    /**
+     * Last message retrieved from the client
+     */
+    private Message message;
+
+    /**
+     * Constructor for service when given a name
+     * @param name
+     */
     public MessageTransferService(String name) {
         super(name);
     }
 
+    /**
+     * Default constructor
+     */
     public MessageTransferService() {
         super("RoutingTableTransferService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        routingTable = (RoutingTable) intent.getSerializableExtra(EXTRA_ROUTING_TABLE);
+        host    = intent.getStringExtra(EXTRA_HOST);
+        port    = intent.getIntExtra(EXTRA_PORT, 8888);
+        message = (Message) intent.getSerializableExtra(EXTRA_MESSAGE);
 
         // Send or receive a Routing Table
         String action = intent.getAction();
         if (action.equals(ACTION_RECEIVE_MESSAGE)) {
             doServerWork();
         } else if (action.equals(ACTION_SEND_MESSAGE)) {
-            if (routingTable != null) {
-                doClientWork();
-            }
+            doClientWork();
         }
+    }
 
-    }    /**
-
-     * Read the RoutingTable object from the stream
+    /**
+     * Sets up a connection to the server and a thread to continually read messages from the client
+     * until the client disconnects.
      */
+    @Override
     protected void doServerWork() {
         try {
             // Create a server socket and wait for client connections. This call blocks until a
             // connection is accepted from a client
-            ServerSocket serverSocket = new ServerSocket(8888);
-            Socket client = serverSocket.accept();
+            serverSocket = new ServerSocket(port);
+            client = serverSocket.accept();
 
             Thread messageRetriever = new Thread() {
                 public void run() {
-                    while (!isCancelled) {
-
+                    while (client.isConnected() && !isCancelled) {
+                        try {
+                            ObjectInputStream inputStream = new ObjectInputStream(client
+                                    .getInputStream());
+                            Message message = (Message) inputStream.readObject();
+                            publishResults();
+                        } catch (IOException e) {
+                            Log.e(MainActivity.TAG, e.getMessage());
+                        } catch (ClassNotFoundException e) {
+                            Log.w(MainActivity.TAG, "Something weird happened. Couldn't parse the input stream");
+                        }
+                    }
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e) {
+                        Log.e(MainActivity.TAG, e.getMessage());
+                    }
                 }
-            }
+            };
+            messageRetriever.start();
 
-             // If this code is reached, a client has connected and transferred data.
-             // Get the RoutingTable object from the stream.
-            ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
-            RoutingTable routingTable = (RoutingTable) inputStream.readObject();
-            if (routingTable != null) {
-                routingTable.merge(routingTable);
-            }
-            publishResults();
-
-            serverSocket.close();
         } catch (IOException e) {
             Log.e(MainActivity.TAG, e.getMessage());
-        } catch (ClassNotFoundException e) {
-                Log.w(MainActivity.TAG, "Something weird happened. Couldn't parse the input stream");
         }
     }
 
     /**
      * Write the RoutingTable object to the stream
      */
+    @Override
     protected void doClientWork() {
 
-        int port = 8888;
         Socket socket = new Socket();
         byte buf[]  = new byte[1024];
 
@@ -135,7 +139,7 @@ public class MessageTransferService extends AbstractTransferService {
 
             // Simply write the routing table object to the output stream
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            outputStream.writeObject(routingTable);
+            outputStream.writeObject(message);
 
             outputStream.close();
         } catch (FileNotFoundException e) {
@@ -162,15 +166,8 @@ public class MessageTransferService extends AbstractTransferService {
      */
     protected void publishResults() {
         Intent intent = new Intent(BROADCAST_NOTIFICATION);
-        intent.putExtra(EXTRA_ROUTING_TABLE, routingTable);
+        intent.putExtra(EXTRA_MESSAGE, message);
         sendBroadcast(intent);
     }
 
-    public class MessageSender implements Runnable {
-
-        @Override
-        public void run() {
-
-        }
-    }
 }
