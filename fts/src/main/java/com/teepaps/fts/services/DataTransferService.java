@@ -92,7 +92,7 @@ public class DataTransferService extends IntentService {
             Log.d(PeerListActivity.TAG, "Client socket - " + socket.isConnected());
             OutputStream outputStream = socket.getOutputStream();
             InputStream inputStream= getInputStream(intent);
-            DeviceDetailFragment.copyFile(inputStream, outputStream);
+            PeerConnectFragment.copyFile(inputStream, outputStream);
             Log.d(PeerListActivity.TAG, "Client: Data written");
         } catch (IOException e) {
             Log.e(PeerListActivity.TAG, e.getMessage());

@@ -63,7 +63,7 @@ public class Peer extends DataModel {
      */
     public void send(Context context, String message) {
         MessageDataSource dataSource = new MessageDataSource(context);
-        dataSource.createMessage("user", peerId, new byte[]{});
+        dataSource.createMessage("user", peerId, "");
 
     }
 
@@ -84,6 +84,10 @@ public class Peer extends DataModel {
     }
 
     public String getPeerId() {
+//        if (peerId != null) {
+//            return peerId.replace("_", ":");
+//        }
+//        return null;
         return peerId;
     }
 
@@ -112,6 +116,9 @@ public class Peer extends DataModel {
     }
 
     public void setPeerId(String peerId) {
+//        if (peerId != null) {
+//            this.peerId = peerId.replace(":", "_");
+//        }
         this.peerId = peerId;
     }
 

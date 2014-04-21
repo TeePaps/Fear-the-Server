@@ -25,7 +25,7 @@ public class RoutingTableTransferService extends AbstractTransferService {
     /**
      * Action to receive the table
      */
-    private static final String ACTION_RECEIVE_TABLE    = "com.teepaps.fts.RECEIVE_TABLE";
+    public static final String ACTION_RECEIVE_TABLE    = "com.teepaps.fts.RECEIVE_TABLE";
 
     /**
      * Action to send the table
@@ -35,12 +35,12 @@ public class RoutingTableTransferService extends AbstractTransferService {
     /**
      * Key for routing table object serializable extra
      */
-    private static final String EXTRA_ROUTING_TABLE     = "routing_table";
+    public static final String EXTRA_ROUTING_TABLE     = "routing_table";
 
     /**
      * Notification to send back to the activity that registered
      */
-    private static final String BROADCAST_NOTIFICATION  = "routing_table";
+    public static final String BROADCAST_NOTIFICATION  = "routing_table";
 
     /**
      * Type of transfer service

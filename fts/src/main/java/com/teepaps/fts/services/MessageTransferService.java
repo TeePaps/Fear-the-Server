@@ -26,12 +26,12 @@ public class MessageTransferService extends AbstractTransferService {
     /**
      * Action to receive the table
      */
-    private static final String ACTION_RECEIVE_MESSAGE  = "com.teepaps.fts.RECEIVE_MESSAGE";
+    public static final String ACTION_RECEIVE_MESSAGE  = "com.teepaps.fts.RECEIVE_MESSAGE";
 
     /**
      * Action to send the table
      */
-    private static final String ACTION_SEND_MESSAGE     = "com.teepaps.fts.SEND_MESSAGE";
+    public static final String ACTION_SEND_MESSAGE     = "com.teepaps.fts.SEND_MESSAGE";
 
     /**
      * Key for routing table object serializable extra
@@ -97,11 +97,14 @@ public class MessageTransferService extends AbstractTransferService {
 
             Thread messageRetriever = new Thread() {
                 public void run() {
-                    while (client.isConnected() && !isCancelled) {
+                    while (!isCancelled) {
                         try {
                             ObjectInputStream inputStream = new ObjectInputStream(client
                                     .getInputStream());
                             Message message = (Message) inputStream.readObject();
+                            if (message.type == Message.TYPE_SENTINEL) {
+                                break;
+                            }
                             publishResults();
                         } catch (IOException e) {
                             Log.e(MainActivity.TAG, e.getMessage());

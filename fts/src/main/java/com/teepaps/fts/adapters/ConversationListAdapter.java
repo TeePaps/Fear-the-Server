@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import com.teepaps.fts.R;
 import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.database.models.Peer;
 
@@ -33,8 +34,7 @@ public class ConversationListAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-//        View view = inflater.inflate(R.layout.conversation_item, parent, false);
-        View view = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
+        View view = inflater.inflate(R.layout.conversation_item, parent, false);
 
         // This line probably doesn't need to be here.
         bindView(view, context, cursor);
@@ -46,13 +46,7 @@ public class ConversationListAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Get the layout elements
-//        TextView tvSender = (TextView) view.findViewById(R.id.tvSender);
-        TextView tvSender = (TextView) view.findViewById(android.R.id.text1);
-        TextView tvNum = (TextView) view.findViewById(android.R.id.text2);
-        tvNum.setText("1");
-        if (cursor != null) {
-            tvNum.setText(cursor.getPosition());
-        }
+        TextView tvSender = (TextView) view.findViewById(R.id.tvSender);
 
         // Extract the Peer model from the cursor
         Peer peer = PeerDataSource.newInstance(context).cursorToPeer(cursor);

@@ -14,6 +14,21 @@ public class Message extends DataModel implements Serializable {
     private static final String TAG = Message.class.getSimpleName();
 
     /**
+     * This type is sent to close a socket
+     */
+    public static final int TYPE_SENTINEL   = 0;
+
+    /**
+     * This type is sent for regular text messages
+     */
+    public static final int TYPE_TEXT       = 1;
+
+    /**
+     * Type of message being sent
+     */
+    public final int type;
+
+    /**
      * Text from message
      */
     private String text;
@@ -46,6 +61,14 @@ public class Message extends DataModel implements Serializable {
      * Was the message read?
      */
     private boolean wasRead;
+
+    /**
+     * Constructor to init the type of the message
+     * @param type
+     */
+    public Message(int type) {
+        this.type = type;
+    }
 
     //******** GETTERS ********
     //*************************

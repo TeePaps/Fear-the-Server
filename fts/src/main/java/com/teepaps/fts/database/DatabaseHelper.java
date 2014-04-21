@@ -19,7 +19,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Version of database. Increment every time column changes are made.
      */
-    private static final int DATABASE_VERSION   = 3;
+    private static final int DATABASE_VERSION   = 4;
 
     /**
      * Column name for primary key.

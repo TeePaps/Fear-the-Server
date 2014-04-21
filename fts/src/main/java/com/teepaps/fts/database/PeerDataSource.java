@@ -3,9 +3,11 @@ package com.teepaps.fts.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.teepaps.fts.database.models.DataModel;
 import com.teepaps.fts.database.models.Peer;
+import com.teepaps.fts.ui.WifiActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,9 +95,10 @@ public class PeerDataSource extends AbstractDataSource {
      */
     public Peer createPeer(String peerName, String peerId, String sharedKey) {
         ContentValues values = new ContentValues();
-        values.put(KEY_PEER_ID, peerName);
+        values.put(KEY_PEER_NAME, peerName);
         values.put(KEY_PEER_ID, peerId);
-        values.put(KEY_SHARED_KEY, sharedKey);
+//        values.put(KEY_SHARED_KEY, sharedKey);
+        values.put(KEY_SHARED_KEY, "this is a key");
         values.put(KEY_COST, 1);
         values.put(KEY_IS_CONNECTED, 0);
         values.put(KEY_HAS_CHATTED, 0);
@@ -109,6 +112,7 @@ public class PeerDataSource extends AbstractDataSource {
      * @return
      */
     public List<Peer> getAllPeers() {
+        open();
         List<Peer> peers = new ArrayList<Peer>();
 
         Cursor cursor = database.query(TABLE_NAME, null, null, null, null, null, null);
@@ -125,13 +129,18 @@ public class PeerDataSource extends AbstractDataSource {
     }
 
     public Peer getPeer(String peerId) {
-        Cursor cursor = database.query(TABLE_NAME, null, KEY_PEER_ID + "=" + peerId,
-                null, null, null, null);
-        if ((cursor != null) && cursor.moveToFirst()) {
-            return cursorToPeer(cursor);
+        Peer peer = null;
+
+        open();
+        Log.d(WifiActivity.TAG, KEY_PEER_ID + " = " + peerId);
+        Cursor cursor = database.query(TABLE_NAME, null, KEY_PEER_ID + " = ?",
+                new String[] { peerId }, null, null, null);
+        if (cursor.moveToFirst()) {
+            peer = cursorToPeer(cursor);
+            cursor.close();
         }
 
-        return new Peer();
+        return peer;
     }
 
     /**
@@ -152,7 +161,7 @@ public class PeerDataSource extends AbstractDataSource {
     protected DataModel cursorToModel(Cursor cursor) {
         Peer peer = new Peer();
         peer.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
-        peer.setPeerId(cursor.getString(cursor.getColumnIndex(KEY_PEER_NAME)));
+        peer.setPeerName(cursor.getString(cursor.getColumnIndex(KEY_PEER_NAME)));
         peer.setPeerId(cursor.getString(cursor.getColumnIndex(KEY_PEER_ID)));
         peer.setSharedKey(cursor.getString(cursor.getColumnIndex(KEY_SHARED_KEY)));
         peer.setCost(cursor.getInt(cursor.getColumnIndex(KEY_COST)));
@@ -179,8 +188,9 @@ public class PeerDataSource extends AbstractDataSource {
     public Cursor getConnectedPeers() {
         open();
         this.createPeer("Jack", "746000444", "anotherkey");
-        return database.query(TABLE_NAME, null, KEY_COST + " > 0",
+        Cursor cursor = database.query(TABLE_NAME, null, KEY_COST + " > 0",
                 null, null, null, null);
+        return cursor;
     }
 
     /**
@@ -190,8 +200,9 @@ public class PeerDataSource extends AbstractDataSource {
     public Cursor getChattedPeers() {
         open();
         this.createPeer("Ted", "1242674645", "thisisakey");
-        return database.query(TABLE_NAME, null, KEY_HAS_CHATTED + " = 1",
+        Cursor cursor = database.query(TABLE_NAME, null, KEY_HAS_CHATTED + " = 1",
                 null, null, null, null);
+        return cursor;
     }
 
      /**
@@ -201,8 +212,9 @@ public class PeerDataSource extends AbstractDataSource {
     public Cursor getVisiblePeers() {
         open();
         this.createPeer("Joe", "66345932", "keykeykey");
-        return database.query(TABLE_NAME, null, DatabaseHelper.KEY_ROW_ID + " > 0",
+        Cursor cursor = database.query(TABLE_NAME, null, DatabaseHelper.KEY_ROW_ID + " > 0",
                 null, null, null, null);
+        return cursor;
 
     }
 }

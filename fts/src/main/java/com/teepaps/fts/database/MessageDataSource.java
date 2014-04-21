@@ -73,7 +73,7 @@ public class MessageDataSource extends AbstractDataSource {
      * @param destination
      * @return
      */
-    public Message createMessage(String source, String destination, byte[] text) {
+    public Message createMessage(String source, String destination, String text) {
         ContentValues values = new ContentValues();
         values.put(KEY_SOURCE, source);
         values.put(KEY_DESTINATION, destination);
@@ -82,11 +82,26 @@ public class MessageDataSource extends AbstractDataSource {
         return (Message) create(values);
     }
 
+    public void addMessage(Message message) {
+        ContentValues values = new ContentValues();
+        if (message.getSource() != null) {
+            values.put(KEY_SOURCE, message.getSource());
+        }
+        if (message.getDestination() != null) {
+            values.put(KEY_DESTINATION, message.getDestination());
+        }
+        if (message.getCipherText() != null) {
+            values.put(KEY_TEXT, message.getCipherText().toString());
+        }
+        create(values);
+    }
+
     /**
      * Retrieve a list of all the Peers in the database
      * @return
      */
     public List<Message> getAllMessages() {
+        open();
         List<Message> messages = new ArrayList<Message>();
 
         Cursor cursor = database.query(TABLE_NAME,
@@ -108,8 +123,12 @@ public class MessageDataSource extends AbstractDataSource {
      * @param source
      * @return
      */
-    public Cursor getConversation(String source) {
-        return database.query(TABLE_NAME, null, KEY_SOURCE + "=" + source, null, null, null, null);
+    public Cursor getConversation(String destination) {
+        open();
+        Cursor cursor = database.query(TABLE_NAME, null, KEY_DESTINATION + " = ?",
+                new String[] { destination }, null, null, null);
+        cursor.moveToFirst();
+        return cursor;
     }
 
     /**
@@ -126,9 +145,9 @@ public class MessageDataSource extends AbstractDataSource {
      */
      @Override
     protected DataModel cursorToModel(Cursor cursor) {
-        Message message = new Message();
+        Message message = new Message(Message.TYPE_TEXT);
         message.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
-        message.setSource(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
+        message.setText(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
         message.setSource(cursor.getString(cursor.getColumnIndex(KEY_SOURCE)));
         message.setDestination(cursor.getString(cursor.getColumnIndex(KEY_DESTINATION)));
 

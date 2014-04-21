@@ -3,19 +3,27 @@ package com.teepaps.fts.ui;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.teepaps.fts.PeerConnectFragment;
+import com.teepaps.fts.PeerConnectUtil;
 import com.teepaps.fts.R;
-import com.teepaps.fts.adapters.ConversationListAdapter;
+import com.teepaps.fts.adapters.PeerListAdapter;
 import com.teepaps.fts.database.loaders.PeerListLoader;
 import com.teepaps.fts.database.models.Peer;
 
@@ -32,7 +40,8 @@ import java.util.List;
  * @author Created by ted on 4/13/14.
  */
 public class PeerListFragment extends ListFragment
-        implements LoaderManager.LoaderCallbacks<List<Peer>>, WifiP2pManager.PeerListListener
+        implements LoaderManager.LoaderCallbacks<List<Peer>>, WifiP2pManager.PeerListListener,
+        WifiP2pManager.ConnectionInfoListener
 {
     /**
      * Devices found by wifiP2P
@@ -44,6 +53,20 @@ public class PeerListFragment extends ListFragment
      */
     private PeerSelectedListener listener;
 
+    /**
+     * Progress dialog long running tasks on this list
+     */
+    ProgressDialog progressDialog = null;
+
+    /**
+     * Fragment for connecting to other peers. Using a fragment in case I want a UI.
+     */
+    private PeerConnectFragment connectFragment;
+
+    private PeerConnectUtil connectUtil;
+
+    private String peerId;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.peer_list_fragment, container, false);
@@ -54,8 +77,7 @@ public class PeerListFragment extends ListFragment
         super.onActivityCreated(savedInstanceState);
 
         initializeListAdapter();
-
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(0, null, this).forceLoad();
     }
 
     @Override
@@ -66,10 +88,13 @@ public class PeerListFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
-        String peerId = (String) view.getTag();
+        peerId = (String) view.getTag();
         if (listener != null) {
             listener.onPeerSelected(peerId);
         }
+//        connectFragment = PeerConnectFragment.newInstance(peerId);
+        connectUtil = new PeerConnectUtil(getActivity(), peerId);
+
     }
 
     /**
@@ -87,33 +112,105 @@ public class PeerListFragment extends ListFragment
      * Sets up the list adapter to list the conversations
      */
     private void initializeListAdapter() {
-        setListAdapter(new ConversationListAdapter(getActivity()));
-//        getLoaderManager().restartLoader(0, null, this);
-        getLoaderManager().initLoader(0, null, this);
+        setListAdapter(new PeerListAdapter(getActivity()));
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
     public Loader<List<Peer>> onCreateLoader(int id, Bundle args) {
+        Log.w(WifiActivity.TAG, "Creating the loader");
+        if (deviceList != null) {
+            Log.w(WifiActivity.TAG, "device list size = " + deviceList.size());
+        }
         return new PeerListLoader(getActivity(), deviceList);
     }
 
     @Override
     public void onLoadFinished(Loader<List<Peer>> listLoader, List<Peer> peers) {
+        Log.w(WifiActivity.TAG, "Finished loading");
         ((ArrayAdapter) getListAdapter()).addAll(peers);
     }
 
     @Override
     public void onLoaderReset(Loader<List<Peer>> listLoader) {
+        Log.w(WifiActivity.TAG, "Reset the loader");
         ((ArrayAdapter) getListAdapter()).clear();
-        ((ArrayAdapter) getListAdapter()).notifyDataSetChanged();
+//        ((ArrayAdapter) getListAdapter()).notifyDataSetChanged();
     }
 
     @Override
     public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
         reload(wifiP2pDeviceList);
+
+        if (wifiP2pDeviceList.getDeviceList().size() == 0) {
+            Log.d(WifiActivity.TAG, "No devices found");
+            return;
+        }
+    }
+
+    /**
+     * Progress dialog to wait for peers
+     *
+     */
+    public void onInitiateDiscovery() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+        progressDialog = ProgressDialog.show(getActivity(), "Press back to cancel", "finding peers", true,
+                true, new DialogInterface.OnCancelListener() {
+
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+
+                    }
+                }
+        );
+    }
+
+    @Override
+    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+//
+//        Intent serviceIntent = new Intent(getActivity(), MessageTransferService.class);
+//        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
+//        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
+//                wifiP2pInfo.groupOwnerAddress.getHostAddress());
+//        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
+//        getActivity().startService(serviceIntent);
+
+        // After the group negotiation, we assign the group owner as the file
+        // server. The file server is single threaded, single connection server
+        // socket.
+        if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
+//            serviceIntent.setAction(MessageTransferService.ACTION_RECEIVE_MESSAGE);
+        } else if (wifiP2pInfo.groupFormed) {
+            // The other device acts as the client. In this case, we enable the
+            // get file button.
+        }
+
+        Intent intent = new Intent(getActivity(), ConversationActivity.class);
+        intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
+        getActivity().startActivity(intent);
     }
 
     public interface PeerSelectedListener {
         public void onPeerSelected(String peerId);
+    }
+
+    /**
+     * An interface-callback for the activity to listen to fragment interaction
+     * events.
+     */
+    public interface DeviceActionListener {
+
+        void showDetails(WifiP2pDevice device);
+
+        void cancelDisconnect();
+
+        void connect(WifiP2pConfig config);
+
+        void disconnect();
     }
 }

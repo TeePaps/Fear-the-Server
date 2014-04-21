@@ -48,8 +48,13 @@ public class ConversationFragment extends ListFragment
     }
 
     private void initializeResources() {
-        this.peerId = getActivity().getIntent().getStringExtra(
-                ConversationActivity.EXTRA_PEER_ID);
+//        this.peerId = getActivity().getIntent().getStringExtra(
+//                ConversationActivity.EXTRA_PEER_ID);
+        this.peerId = "ae:22:0b:61:51:4f";
+    }
+
+    public void reload() {
+       initializeListAdapter();
     }
 
     private void initializeListAdapter() {
@@ -76,6 +81,7 @@ public class ConversationFragment extends ListFragment
 
 
     public interface ConversationFragmentListener {
-        public void setComposeText(String text);
+        void setComposeText(String text);
+        void submitMessage(String text);
     }
 }

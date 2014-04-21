@@ -31,7 +31,7 @@ public class CommunicationUtils {
      * @param peer - Peer to send string message to
      * @param textToSend
      */
-    public static void send(Context context, Peer peer, byte[] textToSend) {
+    public static void send(Context context, Peer peer, String textToSend) {
         // Get the data source to write to and retrieve the model from
         MessageDataSource dataSource = new MessageDataSource(context.getApplicationContext());
         Message message = dataSource.createMessage("user", peer.getPeerId(), textToSend);

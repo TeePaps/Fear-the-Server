@@ -90,18 +90,20 @@ public abstract class AbstractDataSource {
      * @return the new 'DataModel' created.
      */
     public DataModel create(ContentValues contentValues) {
+        DataModel newModel = null;
+
+        open();
         long insertId = database.insert(getTableName(), null, contentValues);
+
         Cursor cursor = database.query(getTableName(),
                 null, DatabaseHelper.KEY_ROW_ID + " = " + insertId, null,
                 null, null, null);
         if (cursor.moveToFirst()) {
-            DataModel newModel = cursorToModel(cursor);
-            return newModel;
+            newModel = cursorToModel(cursor);
+            cursor.close();
         }
-        cursor.close();
 
-        return null;
-//        return newModel;
+        return newModel;
     }
 
     /**
@@ -109,6 +111,7 @@ public abstract class AbstractDataSource {
      * @param model
      */
     public void delete(DataModel model) {
+        open();
         long id = model.getRowId();
         database.delete(getTableName(), DatabaseHelper.KEY_ROW_ID
                 + " = " + id, null);
@@ -119,6 +122,7 @@ public abstract class AbstractDataSource {
      * @return
      */
     public List<DataModel> getAll() {
+        open();
         List<DataModel> models = new ArrayList<DataModel>();
 
         Cursor cursor = database.query(getTableName(),

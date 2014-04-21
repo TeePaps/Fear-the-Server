@@ -44,10 +44,12 @@ public class PeerListAdapter extends ArrayAdapter<Peer> {
         TextView tvPeerId = (TextView) convertView.findViewById(R.id.tv_peer_id);
         TextView tvPeerCost = (TextView) convertView.findViewById(R.id.tv_peer_cost);
 
-        tvPeerName.setText(getItem(position).getPeerName());
-        tvPeerId.setText(getItem(position).getPeerId());
-        tvPeerCost.setText(getItem(position).getCost());
+        Peer peer = getItem(position);
+        tvPeerName.setText(peer.getPeerName());
+        tvPeerId.setText(peer.getPeerId());
+        tvPeerCost.setText(String.valueOf(peer.getCost()));
 
+        convertView.setTag(peer.getPeerId());
         return convertView;
     }
 }
