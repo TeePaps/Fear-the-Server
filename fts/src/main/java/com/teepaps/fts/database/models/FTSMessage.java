@@ -9,9 +9,9 @@ import java.io.Serializable;
 /**
  * Created by ted on 3/25/14.
  */
-public class Message extends DataModel implements Serializable {
+public class FTSMessage extends DataModel implements Serializable {
 
-    private static final String TAG = Message.class.getSimpleName();
+    private static final String TAG = FTSMessage.class.getSimpleName();
 
     /**
      * This type is sent to close a socket
@@ -66,7 +66,7 @@ public class Message extends DataModel implements Serializable {
      * Constructor to init the type of the message
      * @param type
      */
-    public Message(int type) {
+    public FTSMessage(int type) {
         this.type = type;
     }
 
@@ -103,6 +103,10 @@ public class Message extends DataModel implements Serializable {
         }
 
         return cipherBytes;
+    }
+
+    public String getText() {
+        return text;
     }
 
     //******** SETTERS ********

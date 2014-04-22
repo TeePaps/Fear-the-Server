@@ -10,10 +10,9 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.teepaps.fts.R;
-import com.teepaps.fts.crypto.CryptoUtils;
 import com.teepaps.fts.database.MessageDataSource;
 import com.teepaps.fts.database.PeerDataSource;
-import com.teepaps.fts.database.models.Message;
+import com.teepaps.fts.database.models.FTSMessage;
 import com.teepaps.fts.database.models.Peer;
 import com.teepaps.fts.utils.ConversionUtils;
 
@@ -44,24 +43,26 @@ public class ConversationAdapter extends CursorAdapter {
      */
     private Peer peer;
 
+    private String otherPeerId;
+
     /**
      * Inflater for the view
      */
     LayoutInflater inflater;
 
-    public ConversationAdapter(Context context, String peerId) {
+    public ConversationAdapter(Context context, String peerId, String otherPeerId) {
         super(context, null, 0);
 
         this.context    = context;
         this.inflater   = (LayoutInflater)context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.peer       = PeerDataSource.newInstance(context).getPeer(peerId);
+        this.otherPeerId = otherPeerId;
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view;
-        view = null;
+        View view = null;
 
         int type = getItemViewType(cursor);
 
@@ -86,19 +87,20 @@ public class ConversationAdapter extends CursorAdapter {
         TextView tvDate = (TextView) view.findViewById(R.id.tvDate);
         TextView tvMessage = (TextView) view.findViewById(R.id.tvMessage);
 
-        // Extract the Message object from the cursor
-        Message message = MessageDataSource.newInstance(context).cursorToMessage(cursor);
+        // Extract the FTSMessage object from the cursor
+        FTSMessage message = MessageDataSource.newInstance(context).cursorToMessage(cursor);
 
-        // Set the TextViews using the Message object
+        // Set the TextViews using the FTSMessage object
         tvSender.setText(message.getSource());
         try {
             tvDate.setText(ConversionUtils.milliToString(message.getSentTime()));
-            tvMessage.setText(CryptoUtils.decrypt(peer.getSharedKeyBytes(), message.getCipherText()));
+//            tvMessage.setText(CryptoUtils.decrypt(peer.getSharedKeyBytes(), message.getCipherText()));
+            tvMessage.setText(message.getText());
         } catch (IllegalArgumentException iae) {
             Log.w(TAG, "Unable to format date given");
             tvDate.setText("");
         } catch (Exception e) {
-            Log.w(TAG, "Message decryption failed");
+            Log.w(TAG, "FTSMessage decryption failed");
             tvMessage.setText("Bad encrypted message");
         }
 

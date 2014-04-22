@@ -42,6 +42,7 @@ public abstract class AbstractTransferService extends IntentService {
      * Port to connect the socket on
      */
     protected int port;
+
     /**
      * Socket from the server
      */

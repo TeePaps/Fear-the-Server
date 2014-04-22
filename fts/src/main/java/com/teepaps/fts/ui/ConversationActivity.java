@@ -1,18 +1,22 @@
 package com.teepaps.fts.ui;
 
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.teepaps.fts.MessageTransferFragment;
 import com.teepaps.fts.R;
 import com.teepaps.fts.database.MessageDataSource;
+import com.teepaps.fts.database.models.FTSMessage;
 
-import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectView;
 
-public class ConversationActivity extends RoboActivity
-        implements ConversationFragment.ConversationFragmentListener
+public class ConversationActivity extends Activity
+        implements ConversationFragment.ConversationFragmentListener,
+        MessageTransferFragment.MessageActionListener
 {
     private static final String TAG = ConversationActivity.class.getSimpleName();
 
@@ -22,19 +26,37 @@ public class ConversationActivity extends RoboActivity
     public static final String EXTRA_PEER_ID = "peer_id";
 
     /**
+     * Tag for the MessageTransferFragment for this activity
+     */
+    private static final String TAG_FRAG_MESSAGE_TRANSFER = "frag_msg_transfer";
+    /**
      * Send button, using RoboGuice
      */
-    @InjectView(R.id.send_button)           ImageButton bSend;
+    @InjectView(R.id.send_button)
+    ImageButton bSend;
 
     /**
      * Text editor, using RoboGuice
      */
-    @InjectView(R.id.embedded_text_editor)  EditText etEditor;
+    @InjectView(R.id.embedded_text_editor)
+    EditText etEditor;
+
+    /**
+     * MAC address of the peer to connect to
+     */
+    private String peerId;
+
+    /**
+     * Manages the messaging service
+     */
+    private MessageTransferFragment messagingFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.conversation_activity);
+
+        peerId = getIntent().getStringExtra(EXTRA_PEER_ID);
 
         bSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,7 +67,18 @@ public class ConversationActivity extends RoboActivity
             }
         });
 
-    }
+        // Add the message transfer fragment
+        if (savedInstanceState != null) {
+            messagingFragment = (MessageTransferFragment) getFragmentManager()
+                    .findFragmentByTag(TAG_FRAG_MESSAGE_TRANSFER);
+        }
+        else {
+            messagingFragment = MessageTransferFragment.newInstance(peerId, 8888);
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.add(messagingFragment, TAG_FRAG_MESSAGE_TRANSFER);
+            transaction.commit();
+        }
+   }
 
     @Override
     protected void onResume() {
@@ -64,7 +97,20 @@ public class ConversationActivity extends RoboActivity
 
     @Override
     public void submitMessage(String text) {
-        MessageDataSource.newInstance(this).createMessage("me", "ae:22:0b:61:51:4f", text);
+        // Construct the message
+        FTSMessage message = new FTSMessage(FTSMessage.TYPE_TEXT);
+        message.setText(text);
+        message.setDestination(peerId);
+        message.setSource("Ted");
+
+        // Asynchronously sends message, onMessageReceived() callback handles the sent message
+        messagingFragment.sendMessage(message);
+    }
+
+    @Override
+    public void onMessageReceived(FTSMessage message) {
+        // Add the message and notify the fragment
+        MessageDataSource.newInstance(this).addMessage(message);
         ConversationFragment fragment = (ConversationFragment) getFragmentManager()
                 .findFragmentById(R.id.fragment_content);
         fragment.reload();

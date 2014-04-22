@@ -10,7 +10,7 @@ import com.teepaps.fts.ui.WifiActivity;
 /**
  * Created by ted on 4/19/14.
  */
-public class MessageBroadcastReceiver extends BroadcastReceiver {
+public class FTSMessageBroadcastReceiver extends BroadcastReceiver {
 
     /**
      * Activity to perform actions on
@@ -20,7 +20,7 @@ public class MessageBroadcastReceiver extends BroadcastReceiver {
     /**
      * @param activity activity associated with the receiver
      */
-    public MessageBroadcastReceiver(WifiActivity activity) {
+    public FTSMessageBroadcastReceiver(WifiActivity activity) {
         super();
         this.activity = activity;
     }
@@ -29,7 +29,7 @@ public class MessageBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (RoutingTableTransferService.BROADCAST_NOTIFICATION.equals(action)) {
-//            Message message = (RoutingTable) intent
+//            FTSMessage message = (RoutingTable) intent
 //                    .getSerializableExtra(RoutingTableTransferService.EXTRA_MESSAGE);
 //            MessageDataSource.newInstance(activity).addMessage(message);
 

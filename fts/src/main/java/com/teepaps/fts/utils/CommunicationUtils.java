@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.teepaps.fts.database.MessageDataSource;
-import com.teepaps.fts.database.models.Message;
+import com.teepaps.fts.database.models.FTSMessage;
 import com.teepaps.fts.database.models.Peer;
 import com.teepaps.fts.ui.MainActivity;
 
@@ -22,7 +22,7 @@ public class CommunicationUtils {
      * data members.
      * @param message - message to pass.
      */
-    public static void send(Message message) {
+    public static void send(FTSMessage message) {
         Log.w("Com", message.getDestination());
     }
 
@@ -34,7 +34,7 @@ public class CommunicationUtils {
     public static void send(Context context, Peer peer, String textToSend) {
         // Get the data source to write to and retrieve the model from
         MessageDataSource dataSource = new MessageDataSource(context.getApplicationContext());
-        Message message = dataSource.createMessage("user", peer.getPeerId(), textToSend);
+        FTSMessage message = dataSource.createMessage("user", peer.getPeerId(), textToSend);
 
         // Send the message along
         send(message);

@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import com.teepaps.fts.database.models.DataModel;
-import com.teepaps.fts.database.models.Message;
+import com.teepaps.fts.database.models.FTSMessage;
 import com.teepaps.fts.utils.PrefsUtils;
 
 import java.util.ArrayList;
@@ -68,21 +68,21 @@ public class MessageDataSource extends AbstractDataSource {
     }
 
     /**
-     * Create a new 'Message' entry in the database and return the new Peer created
+     * Create a new 'FTSMessage' entry in the database and return the new Peer created
      * @param source
      * @param destination
      * @return
      */
-    public Message createMessage(String source, String destination, String text) {
+    public FTSMessage createMessage(String source, String destination, String text) {
         ContentValues values = new ContentValues();
         values.put(KEY_SOURCE, source);
         values.put(KEY_DESTINATION, destination);
         values.put(KEY_TEXT, text);
 
-        return (Message) create(values);
+        return (FTSMessage) create(values);
     }
 
-    public void addMessage(Message message) {
+    public void addMessage(FTSMessage message) {
         ContentValues values = new ContentValues();
         if (message.getSource() != null) {
             values.put(KEY_SOURCE, message.getSource());
@@ -100,16 +100,16 @@ public class MessageDataSource extends AbstractDataSource {
      * Retrieve a list of all the Peers in the database
      * @return
      */
-    public List<Message> getAllMessages() {
+    public List<FTSMessage> getAllMessages() {
         open();
-        List<Message> messages = new ArrayList<Message>();
+        List<FTSMessage> messages = new ArrayList<FTSMessage>();
 
         Cursor cursor = database.query(TABLE_NAME,
                 null, null, null, null, null, null);
 
         cursor.moveToFirst();
         while ((cursor != null) && !cursor.isAfterLast()) {
-            Message message = cursorToMessage(cursor);
+            FTSMessage message = cursorToMessage(cursor);
             messages.add(message);
             cursor.moveToNext();
         }
@@ -123,29 +123,30 @@ public class MessageDataSource extends AbstractDataSource {
      * @param source
      * @return
      */
-    public Cursor getConversation(String destination) {
+    public Cursor getConversation(String destination, String source) {
         open();
-        Cursor cursor = database.query(TABLE_NAME, null, KEY_DESTINATION + " = ?",
-                new String[] { destination }, null, null, null);
+        Cursor cursor = database.query(TABLE_NAME, null,
+                KEY_DESTINATION + " = ? OR " + KEY_SOURCE + " = ?",
+                new String[] { destination, source }, null, null, null);
         cursor.moveToFirst();
         return cursor;
     }
 
     /**
-     * Wrapper to extract a 'Message' from a cursor
+     * Wrapper to extract a 'FTSMessage' from a cursor
      * @param cursor
      */
-    public Message cursorToMessage(Cursor cursor) {
-        return (Message) cursorToModel(cursor);
+    public FTSMessage cursorToMessage(Cursor cursor) {
+        return (FTSMessage) cursorToModel(cursor);
     }
 
     /**
-     * Extract a 'Message' from a cursor
+     * Extract a 'FTSMessage' from a cursor
      * @param cursor
      */
      @Override
     protected DataModel cursorToModel(Cursor cursor) {
-        Message message = new Message(Message.TYPE_TEXT);
+        FTSMessage message = new FTSMessage(FTSMessage.TYPE_TEXT);
         message.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
         message.setText(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
         message.setSource(cursor.getString(cursor.getColumnIndex(KEY_SOURCE)));

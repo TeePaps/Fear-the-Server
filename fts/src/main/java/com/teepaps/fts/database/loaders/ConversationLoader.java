@@ -21,14 +21,17 @@ public class ConversationLoader extends CursorLoader {
      */
     private final String peerId;
 
-    public ConversationLoader(Context context, String peerId) {
+    private final String otherPeerId;
+
+    public ConversationLoader(Context context, String peerId, String otherPeerId) {
         super(context);
-        this.context = context.getApplicationContext();
-        this.peerId = peerId;
+        this.context        = context.getApplicationContext();
+        this.peerId         = peerId;
+        this.otherPeerId    = otherPeerId;
     }
 
     @Override
     public Cursor loadInBackground() {
-        return MessageDataSource.newInstance(context).getConversation(peerId);
+        return MessageDataSource.newInstance(context).getConversation(peerId, otherPeerId);
     }
 }

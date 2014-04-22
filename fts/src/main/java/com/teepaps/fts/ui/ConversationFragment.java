@@ -27,6 +27,7 @@ public class ConversationFragment extends ListFragment
      * ID of the peer to communicate with
      */
     private String peerId;
+    private String localMAC;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle) {
@@ -59,14 +60,14 @@ public class ConversationFragment extends ListFragment
 
     private void initializeListAdapter() {
         if (peerId != null) {
-            setListAdapter(new ConversationAdapter(getActivity(), peerId));
+            setListAdapter(new ConversationAdapter(getActivity(), peerId, localMAC));
             getLoaderManager().initLoader(0, null, this);
         }
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new ConversationLoader(getActivity(), peerId);
+        return new ConversationLoader(getActivity(), peerId, localMAC);
     }
 
     @Override

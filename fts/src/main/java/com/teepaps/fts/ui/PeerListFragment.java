@@ -172,27 +172,20 @@ public class PeerListFragment extends ListFragment
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-//
-//        Intent serviceIntent = new Intent(getActivity(), MessageTransferService.class);
-//        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
-//        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
-//                wifiP2pInfo.groupOwnerAddress.getHostAddress());
-//        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
-//        getActivity().startService(serviceIntent);
 
         // After the group negotiation, we assign the group owner as the file
         // server. The file server is single threaded, single connection server
         // socket.
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
-//            serviceIntent.setAction(MessageTransferService.ACTION_RECEIVE_MESSAGE);
-        } else if (wifiP2pInfo.groupFormed) {
-            // The other device acts as the client. In this case, we enable the
-            // get file button.
+            Intent intent = new Intent(getActivity(), ConversationActivity.class);
+            getActivity().startActivity(intent);
+        }
+        else if (wifiP2pInfo.groupFormed) {
+            Intent intent = new Intent(getActivity(), ConversationActivity.class);
+            intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
+            getActivity().startActivity(intent);
         }
 
-        Intent intent = new Intent(getActivity(), ConversationActivity.class);
-        intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
-        getActivity().startActivity(intent);
     }
 
     public interface PeerSelectedListener {
