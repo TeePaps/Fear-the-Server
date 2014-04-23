@@ -1,8 +1,10 @@
 package com.teepaps.fts.database.models;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.common.io.BaseEncoding;
+import com.teepaps.fts.utils.PrefsUtils;
 
 import java.io.Serializable;
 
@@ -19,9 +21,14 @@ public class FTSMessage extends DataModel implements Serializable {
     public static final int TYPE_SENTINEL   = 0;
 
     /**
+     * This type is sent on connection to share info, such as MAC and key
+     */
+    public static final int TYPE_INFO       = 1;
+
+    /**
      * This type is sent for regular text messages
      */
-    public static final int TYPE_TEXT       = 1;
+    public static final int TYPE_TEXT       = 2;
 
     /**
      * Type of message being sent
@@ -47,6 +54,12 @@ public class FTSMessage extends DataModel implements Serializable {
      * Cipher text from message sent
      */
     private String cipherText;
+
+    /**
+     * Time the message was created, in epoch time
+     */
+    private long creationTime;
+
     /**
      * Time the message was sent, in epoch time
      */
@@ -70,6 +83,27 @@ public class FTSMessage extends DataModel implements Serializable {
         this.type = type;
     }
 
+    /**
+     * A message intended to just communicate some information
+     * @param context
+     * @return
+     */
+    public static FTSMessage newInfoMessage(Context context) {
+        FTSMessage message = new FTSMessage(TYPE_INFO);
+        message.setSource(PrefsUtils.getString(context, PrefsUtils.KEY_MAC, null));
+        return message;
+    }
+
+    /**
+     * A message intended to just communicate some information
+     * @param context
+     * @return
+     */
+    public static FTSMessage newTerminateMessage() {
+        FTSMessage message = new FTSMessage(TYPE_SENTINEL);
+        return message;
+    }
+
     //******** GETTERS ********
     //*************************
 
@@ -81,12 +115,21 @@ public class FTSMessage extends DataModel implements Serializable {
         return destination;
     }
 
+    public String getCipherText() {
+//        return cipherText;
+        return text;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
+    }
+
     public long getSentTime() {
         return sentTime;
     }
 
-    public String getCipherText() {
-        return cipherText;
+    public long getReceivedTime() {
+        return receivedTime;
     }
 
     /**
@@ -122,5 +165,17 @@ public class FTSMessage extends DataModel implements Serializable {
 
     public void setDestination(String destination) {
         this.destination = destination;
+    }
+
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public void setSentTime(long sentTime) {
+        this.sentTime = sentTime;
+    }
+
+    public void setReceivedTime(long receivedTime) {
+        this.receivedTime = receivedTime;
     }
 }

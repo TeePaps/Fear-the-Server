@@ -5,6 +5,16 @@
     android:layout_width="fill_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:text="PEERS IN RANGE" />
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:gravity="center_vertical"
+        android:background="@android:color/holo_blue_light" />
 
     <ListView android:id="@android:id/list"
               style="?android:attr/listViewWhiteStyle"

@@ -15,4 +15,7 @@
     <string name="group_owner_text">"Am I the Group Owner? "</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
+    <string name="alert_disconnect">Would you like to disconnect?</string>
+    <string name="alert_disconnect_pos">Disconnect</string>
+    <string name="alert_disconnect_neg">Cancel</string>
 </resources>

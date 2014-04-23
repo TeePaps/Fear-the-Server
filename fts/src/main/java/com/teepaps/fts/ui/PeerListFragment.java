@@ -26,6 +26,7 @@ import com.teepaps.fts.R;
 import com.teepaps.fts.adapters.PeerListAdapter;
 import com.teepaps.fts.database.loaders.PeerListLoader;
 import com.teepaps.fts.database.models.Peer;
+import com.teepaps.fts.utils.PrefsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -183,9 +184,20 @@ public class PeerListFragment extends ListFragment
         else if (wifiP2pInfo.groupFormed) {
             Intent intent = new Intent(getActivity(), ConversationActivity.class);
             intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
+            intent.putExtra(ConversationActivity.EXTRA_HOST_ADDRESS,
+                    wifiP2pInfo.groupOwnerAddress.getHostName());
             getActivity().startActivity(intent);
         }
 
+    }
+
+    /**
+     * Update UI for this device.
+     *
+     * @param device WifiP2pDevice object
+     */
+    public void updateThisDevice(WifiP2pDevice device) {
+        PrefsUtils.putString(getActivity(), PrefsUtils.KEY_MAC, device.deviceAddress);
     }
 
     public interface PeerSelectedListener {

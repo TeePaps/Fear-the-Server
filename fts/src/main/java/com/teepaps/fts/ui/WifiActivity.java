@@ -107,6 +107,7 @@ public class WifiActivity extends Activity
     @Override
     public void onResume() {
         super.onResume();
+        disconnect();
         wifiBroadcastReceiver = new WiFiDirectBroadcastReceiver(wifiManager, channel, this);
         registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
 
@@ -221,9 +222,6 @@ public class WifiActivity extends Activity
 
     @Override
     public void disconnect() {
-//        final DeviceDetailFragment fragment = (DeviceDetailFragment) getFragmentManager()
-//                .findFragmentById(R.id.frag_detail);
-//        fragment.resetViews();
         wifiManager.removeGroup(channel, new WifiP2pManager.ActionListener() {
 
             @Override

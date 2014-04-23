@@ -6,6 +6,7 @@ import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +15,13 @@ import android.widget.CursorAdapter;
 import com.teepaps.fts.R;
 import com.teepaps.fts.adapters.ConversationAdapter;
 import com.teepaps.fts.database.loaders.ConversationLoader;
+import com.teepaps.fts.utils.PrefsUtils;
 
 public class ConversationFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>
 {
+    private static final String TAG = ConversationFragment.class.getSimpleName();
+
     /**
      * Callback for this fragment
      */
@@ -46,20 +50,31 @@ public class ConversationFragment extends ListFragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.listener = (ConversationFragmentListener) activity;
+        localMAC = PrefsUtils.getString(getActivity(), PrefsUtils.KEY_MAC, null);
     }
 
     private void initializeResources() {
-//        this.peerId = getActivity().getIntent().getStringExtra(
-//                ConversationActivity.EXTRA_PEER_ID);
-        this.peerId = "ae:22:0b:61:51:4f";
+        this.peerId = getActivity().getIntent().getStringExtra(
+                ConversationActivity.EXTRA_PEER_ID);
     }
 
-    public void reload() {
-       initializeListAdapter();
+    public void reload(String peerId) {
+        this.peerId = peerId;
+        localMAC = PrefsUtils.getString(getActivity(), PrefsUtils.KEY_MAC, null);
+
+        if (getListAdapter() != null) {
+            Log.d(TAG, "list adapter was null in reload()");
+            getLoaderManager().restartLoader(0, null, this);
+        } else {
+            Log.d(TAG, "Not null so init list adapter in reload()");
+            initializeListAdapter();
+        }
     }
 
     private void initializeListAdapter() {
+        Log.d(TAG, "Entered initializeListAdapter");
         if (peerId != null) {
+            Log.d(TAG, "Peer = "+ String.valueOf(peerId) + "\nlocalMAC = " + String.valueOf(localMAC));
             setListAdapter(new ConversationAdapter(getActivity(), peerId, localMAC));
             getLoaderManager().initLoader(0, null, this);
         }
@@ -67,16 +82,19 @@ public class ConversationFragment extends ListFragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "Creating the loader");
         return new ConversationLoader(getActivity(), peerId, localMAC);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        Log.d(TAG, "Loader finished");
         ((CursorAdapter) getListAdapter()).changeCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "Reset the loader");
         ((CursorAdapter) getListAdapter()).changeCursor(null);
     }
 
