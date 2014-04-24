@@ -91,12 +91,7 @@ public class Peer extends DataModel {
         return peerId;
     }
 
-    public String getSharedKey() {
-        return sharedKey;
-    }
-
     public int getCost() {
-
         return cost;
     }
 
@@ -105,7 +100,14 @@ public class Peer extends DataModel {
      * @return
      */
     public byte[] getSharedKeyBytes() {
-        return BaseEncoding.base64().decode(getSharedKey());
+        if (getSharedKeyEncoded() != null) {
+            return BaseEncoding.base64().decode(getSharedKeyEncoded());
+        }
+        return null;
+    }
+
+    public String getSharedKeyEncoded() {
+        return sharedKey;
     }
 
     //******** SETTERS ********
@@ -127,7 +129,7 @@ public class Peer extends DataModel {
     }
 
     public void setSharedKey(byte[] key) {
-        BaseEncoding.base64().encode(key);
+        this.sharedKey = BaseEncoding.base64().encode(key);
     }
 
     public void setCost(int cost) {

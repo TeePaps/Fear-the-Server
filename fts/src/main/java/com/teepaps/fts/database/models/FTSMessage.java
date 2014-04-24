@@ -36,11 +36,6 @@ public class FTSMessage extends DataModel implements Serializable {
     public final int type;
 
     /**
-     * Text from message
-     */
-    private String text;
-
-    /**
      * Source identifier
      */
     private String source;
@@ -96,7 +91,6 @@ public class FTSMessage extends DataModel implements Serializable {
 
     /**
      * A message intended to just communicate some information
-     * @param context
      * @return
      */
     public static FTSMessage newTerminateMessage() {
@@ -116,8 +110,7 @@ public class FTSMessage extends DataModel implements Serializable {
     }
 
     public String getCipherText() {
-//        return cipherText;
-        return text;
+        return cipherText;
     }
 
     public long getCreationTime() {
@@ -148,15 +141,11 @@ public class FTSMessage extends DataModel implements Serializable {
         return cipherBytes;
     }
 
-    public String getText() {
-        return text;
-    }
-
     //******** SETTERS ********
     //*************************
 
-    public void setText(String text) {
-        this.text = text;
+    public void setCipherText(String text) {
+        this.cipherText = text;
     }
 
     public void setSource(String source) {

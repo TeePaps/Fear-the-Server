@@ -16,8 +16,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.teepaps.fts.PeerConnectFragment;
+import com.teepaps.fts.PeerConnectUtil;
 import com.teepaps.fts.R;
+import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.receivers.WiFiDirectBroadcastReceiver;
 import com.teepaps.fts.routing.RoutingTable;
 
@@ -82,6 +83,8 @@ public class WifiActivity extends Activity
     public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
         this.isWifiP2pEnabled = isWifiP2pEnabled;
     }
+
+    PeerConnectUtil connectUtil;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -258,11 +261,24 @@ public class WifiActivity extends Activity
 
     @Override
     public void onPeerSelected(String peerId) {
-        PeerConnectFragment.newInstance(peerId);
+        String key = PeerDataSource.newInstance(this).getPeer(peerId).getSharedKeyEncoded();
+        Log.d(TAG, "key = " + String.valueOf(key));
+        if (key == null) {
+//            startNFSHandshake();
+            Intent intent = new Intent(this, NfcActivity.class);
+            intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
+            startActivity(intent);
+        } else {
+//            PeerConnectFragment.newInstance(peerId);
+            connectUtil = new PeerConnectUtil(this, peerId);
+        }
     }
 
     @Override
     public void onConversationSelected(String peerId) {
-
+        Intent intent = new Intent(this, ConversationViewActivity.class);
+        intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
+        startActivity(intent);
     }
+
 }

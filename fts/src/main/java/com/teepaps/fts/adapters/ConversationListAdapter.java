@@ -52,8 +52,8 @@ public class ConversationListAdapter extends CursorAdapter {
         Peer peer = PeerDataSource.newInstance(context).cursorToPeer(cursor);
 
         // Set the TextViews using the FTSMessage object
-        String peerId = peer.getPeerId();
-        tvSender.setText(peerId);
-        view.setTag(peerId);
+        String peerName = peer.getPeerName();
+        tvSender.setText(peerName);
+        view.setTag(peer.getPeerId());
     }
 }

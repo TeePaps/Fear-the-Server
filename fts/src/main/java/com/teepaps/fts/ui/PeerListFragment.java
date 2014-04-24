@@ -89,12 +89,12 @@ public class PeerListFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
+
         peerId = (String) view.getTag();
-        if (listener != null) {
-            listener.onPeerSelected(peerId);
-        }
+        ((PeerSelectedListener) getActivity()).onPeerSelected(peerId);
+        Log.d("peer", "OnClick PeerId = " + String.valueOf(peerId));
 //        connectFragment = PeerConnectFragment.newInstance(peerId);
-        connectUtil = new PeerConnectUtil(getActivity(), peerId);
+//        connectUtil = new PeerConnectUtil(getActivity(), peerId);
 
     }
 
@@ -174,11 +174,16 @@ public class PeerListFragment extends ListFragment
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
 
+        Log.d("peer", "PeerId = " + String.valueOf(peerId));
+        if (peerId == null) {
+//           peerId = "awaiting MAC";
+        }
         // After the group negotiation, we assign the group owner as the file
         // server. The file server is single threaded, single connection server
         // socket.
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             Intent intent = new Intent(getActivity(), ConversationActivity.class);
+            intent.putExtra(ConversationActivity.EXTRA_PEER_ID, peerId);
             getActivity().startActivity(intent);
         }
         else if (wifiP2pInfo.groupFormed) {

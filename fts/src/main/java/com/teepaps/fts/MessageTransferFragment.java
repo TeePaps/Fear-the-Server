@@ -325,7 +325,7 @@ public class MessageTransferFragment extends RoboFragment {
 
             try {
                 //Create a client socket with the host, port, and timeout information.
-                sleep(5000);
+                sleep(500);
                 clientToServerSocket.setReuseAddress(true);
                 clientToServerSocket.bind(null);
                 Log.d(TAG, "Connecting to the client server socket at: " + host + ", " + String.valueOf(port));

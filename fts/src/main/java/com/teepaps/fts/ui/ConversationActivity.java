@@ -9,10 +9,13 @@ import android.widget.ImageButton;
 
 import com.teepaps.fts.MessageTransferFragment;
 import com.teepaps.fts.R;
+import com.teepaps.fts.crypto.CryptoUtils;
 import com.teepaps.fts.database.MessageDataSource;
+import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.database.models.FTSMessage;
-import com.teepaps.fts.utils.AlertDialogFragment;
+import com.teepaps.fts.database.models.Peer;
 import com.teepaps.fts.utils.PrefsUtils;
+import com.teepaps.fts.utils.SimpleAlertDialogFragment;
 
 import roboguice.activity.RoboFragmentActivity;
 import roboguice.inject.InjectView;
@@ -57,6 +60,8 @@ public class ConversationActivity extends RoboFragmentActivity
 
     private String localMAC;
 
+    private Peer peer;
+
     /**
      * Host address of the group owner peer
      */
@@ -76,6 +81,9 @@ public class ConversationActivity extends RoboFragmentActivity
 
         peerId = getIntent().getStringExtra(EXTRA_PEER_ID);
         hostAddress = getIntent().getStringExtra(EXTRA_HOST_ADDRESS);
+        if (peerId != null) {
+            peer = PeerDataSource.newInstance(this).getPeer(peerId);
+        }
 
         bSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,10 +121,10 @@ public class ConversationActivity extends RoboFragmentActivity
 
     @Override
     public void onBackPressed() {
-        AlertDialogFragment dialog = AlertDialogFragment
+        SimpleAlertDialogFragment dialog = SimpleAlertDialogFragment
                 .newInstance(android.R.drawable.ic_delete, R.string.alert_disconnect,
                         R.string.alert_disconnect_pos)
-                .setOnClickListners(new AlertDialogFragment.AlertDialogOnClickListeners() {
+                .setOnClickListeners(new SimpleAlertDialogFragment.AlertDialogOnClickListeners() {
                     @Override
                     public void doPositiveClick() {
                         messagingFragment.sendFTSMessage(FTSMessage.newTerminateMessage());
@@ -139,7 +147,12 @@ public class ConversationActivity extends RoboFragmentActivity
     public void submitMessage(String text) {
         // Construct the message
         FTSMessage message = new FTSMessage(FTSMessage.TYPE_TEXT);
-        message.setText(text);
+        try {
+            message.setCipherText(CryptoUtils.encrypt(peer.getSharedKeyBytes(), text));
+        } catch (Exception e) {
+            e.printStackTrace();
+            message.setCipherText(text);
+        }
         if (localMAC == null) {
             localMAC = PrefsUtils.getString(this, PrefsUtils.KEY_MAC, "Ted");
         }
@@ -157,13 +170,22 @@ public class ConversationActivity extends RoboFragmentActivity
         }
         // Check for peerId info
         else if ((peerId == null) && (message.type == FTSMessage.TYPE_INFO)) {
+            Log.d(TAG, "null or info");
             peerId = message.getSource();
+            peer = PeerDataSource.newInstance(this).getPeer(peerId);
             messagingFragment.setPeerId(peerId);
+
+            ConversationFragment fragment = (ConversationFragment) getFragmentManager()
+                    .findFragmentById(R.id.fragment_content);
+            Log.d(TAG, "Reloading the message list");
+            fragment.reload(peerId);
+
         }
         else {
             Log.d(TAG, "A message was received!");
             // Add the message and notify the fragment
             MessageDataSource.newInstance(this).addMessage(message);
+
             ConversationFragment fragment = (ConversationFragment) getFragmentManager()
                     .findFragmentById(R.id.fragment_content);
             Log.d(TAG, "Reloading the message list");

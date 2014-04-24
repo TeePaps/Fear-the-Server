@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.google.common.io.BaseEncoding;
 import com.teepaps.fts.database.models.DataModel;
 import com.teepaps.fts.database.models.Peer;
 import com.teepaps.fts.ui.WifiActivity;
@@ -93,17 +94,24 @@ public class PeerDataSource extends AbstractDataSource {
      * @param sharedKey
      * @return
      */
-    public Peer createPeer(String peerName, String peerId, String sharedKey) {
-        ContentValues values = new ContentValues();
-        values.put(KEY_PEER_NAME, peerName);
-        values.put(KEY_PEER_ID, peerId);
-//        values.put(KEY_SHARED_KEY, sharedKey);
-        values.put(KEY_SHARED_KEY, "this is a key");
-        values.put(KEY_COST, 1);
-        values.put(KEY_IS_CONNECTED, 0);
-        values.put(KEY_HAS_CHATTED, 0);
+    public Peer createPeer(String peerName, String peerId, byte[] sharedKey) {
+        ContentValues values = getContentValues(peerName, peerId, sharedKey, 1, 0, 0);
 
         return (Peer) create(values);
+    }
+
+    private ContentValues getContentValues(String peerName, String peerId, byte[] sharedKey,
+                                           int cost, int isConnected, int hasChatted)
+    {
+        ContentValues values = new ContentValues();
+        if (peerName != null) values.put(KEY_PEER_NAME, peerName);
+        if (peerId != null) values.put(KEY_PEER_ID, peerId);
+        if (sharedKey != null) values.put(KEY_SHARED_KEY, BaseEncoding.base64().encode(sharedKey));
+        if (cost > -1) values.put(KEY_COST, cost);
+        if (isConnected > -1) values.put(KEY_IS_CONNECTED, isConnected);
+        if (hasChatted > -1) values.put(KEY_HAS_CHATTED, hasChatted);
+
+        return values;
     }
 
     /**
@@ -187,10 +195,17 @@ public class PeerDataSource extends AbstractDataSource {
      */
     public Cursor getConnectedPeers() {
         open();
-        this.createPeer("Jack", "746000444", "anotherkey");
         Cursor cursor = database.query(TABLE_NAME, null, KEY_COST + " > 0",
                 null, null, null, null);
         return cursor;
+    }
+
+    public void updatePeer(Peer peer) {
+        open();
+        ContentValues cvUpdate = getContentValues(peer.getPeerName(), peer.getPeerId(),
+                peer.getSharedKeyBytes(), peer.getCost(), 0, 0);
+        database.update(TABLE_NAME, cvUpdate, KEY_PEER_ID + "=?", new String[] {peer.getPeerId()});
+        close();
     }
 
     /**
@@ -199,7 +214,6 @@ public class PeerDataSource extends AbstractDataSource {
      */
     public Cursor getChattedPeers() {
         open();
-        this.createPeer("Ted", "1242674645", "thisisakey");
         Cursor cursor = database.query(TABLE_NAME, null, KEY_HAS_CHATTED + " = 1",
                 null, null, null, null);
         return cursor;
@@ -211,7 +225,6 @@ public class PeerDataSource extends AbstractDataSource {
      */
     public Cursor getVisiblePeers() {
         open();
-        this.createPeer("Joe", "66345932", "keykeykey");
         Cursor cursor = database.query(TABLE_NAME, null, DatabaseHelper.KEY_ROW_ID + " > 0",
                 null, null, null, null);
         return cursor;

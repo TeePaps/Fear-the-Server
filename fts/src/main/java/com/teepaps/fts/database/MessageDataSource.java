@@ -19,6 +19,8 @@ public class MessageDataSource extends AbstractDataSource {
     //******** STATIC DATA MEMBERS ********
     //*************************************
 
+    private static final String TAG = MessageDataSource.class.getSimpleName();
+
     /**
      * Name of table
      */
@@ -151,6 +153,7 @@ public class MessageDataSource extends AbstractDataSource {
         }
         // make sure to close the cursor
         cursor.close();
+        close();
         return messages;
     }
 
@@ -168,9 +171,10 @@ public class MessageDataSource extends AbstractDataSource {
         }
         open();
         Cursor cursor = database.query(TABLE_NAME, null,
-                KEY_DESTINATION + " = ? OR " + KEY_SOURCE + " = ?",
-                new String[] { destination, source }, null, null, null);
-        cursor.moveToFirst();
+                "(" + KEY_DESTINATION + " = ? AND " + KEY_SOURCE + " = ?)"
+                + "OR (" + KEY_DESTINATION + " = ? AND " + KEY_SOURCE + " = ?)",
+                new String[] { destination, source, source, destination }, null, null, null);
+//        cursor.moveToFirst();
         return cursor;
     }
 
@@ -190,7 +194,7 @@ public class MessageDataSource extends AbstractDataSource {
     protected DataModel cursorToModel(Cursor cursor) {
         FTSMessage message = new FTSMessage(FTSMessage.TYPE_TEXT);
         message.setRowId(cursor.getLong(cursor.getColumnIndex(DatabaseHelper.KEY_ROW_ID)));
-        message.setText(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
+        message.setCipherText(cursor.getString(cursor.getColumnIndex(KEY_TEXT)));
         message.setSource(cursor.getString(cursor.getColumnIndex(KEY_SOURCE)));
         message.setDestination(cursor.getString(cursor.getColumnIndex(KEY_DESTINATION)));
         message.setCreationTime(cursor.getLong(cursor.getColumnIndex(KEY_CREATION_TIME)));

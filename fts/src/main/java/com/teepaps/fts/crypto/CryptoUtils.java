@@ -30,7 +30,7 @@ public class CryptoUtils {
     /**
      * Standard max key length for AES
      */
-    private static final int KEY_LENGTH = 256;
+    private static final int KEY_LENGTH = 128;
 
     /**
      * Random number generator
@@ -107,12 +107,11 @@ public class CryptoUtils {
             throws Exception {
         String[] fields = cipherText.split(DELIMITER);
         if (fields.length != 2) {
-            throw new IllegalArgumentException("Invalid encypted text format");
+            throw new IllegalArgumentException("Invalid encrypted text format");
         }
         try {
-            byte[] salt = BaseEncoding.base64().decode(fields[0]);
-            byte[] iv = BaseEncoding.base64().decode(fields[1]);
-            byte[] cipherBytes = BaseEncoding.base64().decode(fields[2]);
+            byte[] iv = BaseEncoding.base64().decode(fields[0]);
+            byte[] cipherBytes = BaseEncoding.base64().decode(fields[1]);
 
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM, "BC");
             IvParameterSpec ivParams = new IvParameterSpec(iv);

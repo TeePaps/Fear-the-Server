@@ -51,9 +51,7 @@ public class ConversationListFragment extends ListFragment
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         String peerId = (String) view.getTag();
-        if (listener != null) {
-            listener.onConversationSelected(peerId);
-        }
+        ((ConversationSelectedListener) getActivity()).onConversationSelected(peerId);
     }
 
     /**

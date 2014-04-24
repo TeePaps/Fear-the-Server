@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import com.google.common.io.BaseEncoding;
 import com.teepaps.fts.R;
+import com.teepaps.fts.crypto.CryptoUtils;
 import com.teepaps.fts.database.MessageDataSource;
 import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.database.models.FTSMessage;
@@ -50,7 +52,11 @@ public class ConversationAdapter extends CursorAdapter {
      */
     LayoutInflater inflater;
 
-    public ConversationAdapter(Context context, String peerId, String otherPeerId) {
+    boolean isDecrypted = true;
+
+    public ConversationAdapter(Context context, String peerId, String otherPeerId,
+                               boolean isDecrypted)
+    {
         super(context, null, 0);
 
         this.context    = context;
@@ -58,13 +64,15 @@ public class ConversationAdapter extends CursorAdapter {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.peer       = PeerDataSource.newInstance(context).getPeer(peerId);
         this.otherPeerId = otherPeerId;
+        this.isDecrypted = isDecrypted;
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View view = null;
 
-        int type = getItemViewType(cursor);
+//        int type = getItemViewType(cursor);
+        int type = MESSAGE_TYPE_OUTGOING;
 
         switch (type) {
             case ConversationAdapter.MESSAGE_TYPE_OUTGOING:
@@ -75,8 +83,6 @@ public class ConversationAdapter extends CursorAdapter {
                 break;
             default: throw new IllegalArgumentException("unsupported item view type given to ConversationAdapter");
         }
-
-        bindView(view, context, cursor);
         return view;
     }
 
@@ -91,11 +97,21 @@ public class ConversationAdapter extends CursorAdapter {
         FTSMessage message = MessageDataSource.newInstance(context).cursorToMessage(cursor);
 
         // Set the TextViews using the FTSMessage object
-        tvSender.setText(message.getSource());
+        if (message.getSource().equals(peer.getPeerId())) {
+            tvSender.setText(peer.getPeerName());
+        }
+        else {
+            tvSender.setText("Me");
+        }
         try {
             tvDate.setText(ConversionUtils.milliToString(message.getSentTime()));
-//            tvMessage.setText(CryptoUtils.decrypt(peer.getSharedKeyBytes(), message.getCipherText()));
-            tvMessage.setText(message.getText());
+            Log.d(TAG, "KEY = " + BaseEncoding.base64().encode(peer.getSharedKeyBytes()));
+            Log.d(TAG, "Cipher Text = " + message.getCipherText());
+            if (isDecrypted) {
+                tvMessage.setText(CryptoUtils.decrypt(peer.getSharedKeyBytes(), message.getCipherText()));
+            } else {
+                tvMessage.setText(message.getCipherText());
+            }
         } catch (IllegalArgumentException iae) {
             Log.w(TAG, "Unable to format date given");
             tvDate.setText("");
@@ -104,7 +120,8 @@ public class ConversationAdapter extends CursorAdapter {
             tvMessage.setText("Bad encrypted message");
         }
 
-        int type = getItemViewType(cursor);
+//        int type = getItemViewType(cursor);
+        int type = MESSAGE_TYPE_OUTGOING;
 
         switch (type) {
             case ConversationAdapter.MESSAGE_TYPE_OUTGOING:
@@ -116,23 +133,23 @@ public class ConversationAdapter extends CursorAdapter {
         }
 
     }
-
-    @Override
-    public int getItemViewType(int position) {
-        Cursor cursor = (Cursor)getItem(position);
-        return getItemViewType(cursor);
-    }
-
-    /**
-     * Checks whether the message held by the cursor is outgoing or incoming and returns accordingly
-     * @param cursor
-     * @return
-     */
-    private int getItemViewType(Cursor cursor) {
-        if (MessageDataSource.isOutgoing(context, cursor)) {
-            return MESSAGE_TYPE_OUTGOING;
-        }
-        return MESSAGE_TYPE_INCOMING;
-    }
+//
+//    @Override
+//    public int getItemViewType(int position) {
+//        Cursor cursor = (Cursor)getItem(position);
+//        return getItemViewType(cursor);
+//    }
+//
+//    /**
+//     * Checks whether the message held by the cursor is outgoing or incoming and returns accordingly
+//     * @param cursor
+//     * @return
+//     */
+//    private int getItemViewType(Cursor cursor) {
+//        if (MessageDataSource.isOutgoing(context, cursor)) {
+//            return MESSAGE_TYPE_OUTGOING;
+//        }
+//        return MESSAGE_TYPE_INCOMING;
+//    }
 }
 

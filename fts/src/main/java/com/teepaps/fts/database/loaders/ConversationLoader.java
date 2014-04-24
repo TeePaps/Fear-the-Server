@@ -3,6 +3,7 @@ package com.teepaps.fts.database.loaders;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.teepaps.fts.database.MessageDataSource;
 
@@ -10,6 +11,8 @@ import com.teepaps.fts.database.MessageDataSource;
  * Created by ted on 4/6/14.
  */
 public class ConversationLoader extends CursorLoader {
+
+    private static final String TAG = ConversationLoader.class.getSimpleName();
 
     /**
      * Context
@@ -32,6 +35,8 @@ public class ConversationLoader extends CursorLoader {
 
     @Override
     public Cursor loadInBackground() {
+        Log.d(TAG, "Loading in background: peerId = " + String.valueOf(peerId)
+                + " ***** other = " + String.valueOf(otherPeerId));
         return MessageDataSource.newInstance(context).getConversation(peerId, otherPeerId);
     }
 }

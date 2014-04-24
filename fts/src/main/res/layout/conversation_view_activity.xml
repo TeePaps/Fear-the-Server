@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Decryption"
+        android:id="@+id/sw_decrypt"
+        android:layout_gravity="center_horizontal"
+        android:checked="false" />
+
+    <fragment
+        android:id="@+id/fragment_content"
+        class="com.teepaps.fts.ui.ConversationFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_item_detail" />
+
+</LinearLayout>

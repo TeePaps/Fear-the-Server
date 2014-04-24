@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ListView;
 
 import com.teepaps.fts.R;
 import com.teepaps.fts.adapters.ConversationAdapter;
@@ -33,6 +34,8 @@ public class ConversationFragment extends ListFragment
     private String peerId;
     private String localMAC;
 
+    private boolean isDecrypted = true;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle) {
         return inflater.inflate(R.layout.conversation_fragment, container, false);
@@ -51,6 +54,13 @@ public class ConversationFragment extends ListFragment
         super.onAttach(activity);
         this.listener = (ConversationFragmentListener) activity;
         localMAC = PrefsUtils.getString(getActivity(), PrefsUtils.KEY_MAC, null);
+        initializeListAdapter();
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        reload(peerId);
+        super.onListItemClick(l, v, position, id);
     }
 
     private void initializeResources() {
@@ -63,10 +73,10 @@ public class ConversationFragment extends ListFragment
         localMAC = PrefsUtils.getString(getActivity(), PrefsUtils.KEY_MAC, null);
 
         if (getListAdapter() != null) {
-            Log.d(TAG, "list adapter was null in reload()");
+            Log.d(TAG, "Not null so init list adapter in reload()");
             getLoaderManager().restartLoader(0, null, this);
         } else {
-            Log.d(TAG, "Not null so init list adapter in reload()");
+            Log.d(TAG, "list adapter was null in reload()");
             initializeListAdapter();
         }
     }
@@ -75,8 +85,16 @@ public class ConversationFragment extends ListFragment
         Log.d(TAG, "Entered initializeListAdapter");
         if (peerId != null) {
             Log.d(TAG, "Peer = "+ String.valueOf(peerId) + "\nlocalMAC = " + String.valueOf(localMAC));
-            setListAdapter(new ConversationAdapter(getActivity(), peerId, localMAC));
+            setListAdapter(new ConversationAdapter(getActivity(), peerId, localMAC, true));
             getLoaderManager().initLoader(0, null, this);
+        }
+    }
+
+    public void setDecrypted(boolean isDecrypted) {
+        if (this.isDecrypted != isDecrypted) {
+            this.isDecrypted = isDecrypted;
+            setListAdapter(new ConversationAdapter(getActivity(), peerId, localMAC, isDecrypted));
+            reload(peerId);
         }
     }
 
