@@ -8,7 +8,7 @@ import android.util.Log;
 import com.google.common.io.BaseEncoding;
 import com.teepaps.fts.database.models.DataModel;
 import com.teepaps.fts.database.models.Peer;
-import com.teepaps.fts.ui.WifiActivity;
+import com.teepaps.fts.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,7 +140,7 @@ public class PeerDataSource extends AbstractDataSource {
         Peer peer = null;
 
         open();
-        Log.d(WifiActivity.TAG, KEY_PEER_ID + " = " + peerId);
+        Log.d(MainActivity.TAG, KEY_PEER_ID + " = " + peerId);
         Cursor cursor = database.query(TABLE_NAME, null, KEY_PEER_ID + " = ?",
                 new String[] { peerId }, null, null, null);
         if (cursor.moveToFirst()) {

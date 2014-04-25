@@ -102,7 +102,7 @@
                     android:padding="12dp"
                     android:clickable="false"
                     android:enabled="false"
-                    android:src="@drawable/ic_launcher" />
+                    android:src="@android:drawable/ic_menu_send" />
 
             </LinearLayout>
 

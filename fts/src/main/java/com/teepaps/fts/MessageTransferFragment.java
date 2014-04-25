@@ -38,9 +38,10 @@ public class MessageTransferFragment extends RoboFragment {
     public static final String ARG_HOST             = "host";
     public static final String ARG_PORT             = "port";
 
-    public static final int MSG_TERMINATE           = 1;
-    public static final int MSG_UPDATE              = 2;
-    public static final int MSG_NEW_FTS_MESSAGE     = 3;
+    public static final int MSG_CONNECTED           = 1;
+    public static final int MSG_TERMINATE           = 2;
+    public static final int MSG_UPDATE              = 3;
+    public static final int MSG_NEW_FTS_MESSAGE     = 4;
 
     /**
      * MAC address of the peer
@@ -101,11 +102,8 @@ public class MessageTransferFragment extends RoboFragment {
 
     @InjectView(R.id.tv_host)       TextView tvPeer;
 
-    @InjectView(R.id.tv_port)       TextView tvPort;
-
     @InjectView(R.id.tv_connected)  TextView tvConnected;
 
-    @InjectView(R.id.b_connect)     TextView bConnect;
 
 
     /**
@@ -144,10 +142,15 @@ public class MessageTransferFragment extends RoboFragment {
             @Override
             public void handleMessage(Message msg) {
                 switch(msg.what) {
+                    case MSG_CONNECTED:
+                        tvConnected.setText("Yes");
+                        break;
                     case MSG_TERMINATE:
                         Log.d(TAG, "Sentinel message was received");
-                        ((MessageActionListener) getActivity())
-                                .onMessageReceived(FTSMessage.newTerminateMessage());
+                        if (getActivity() != null) {
+                            ((MessageActionListener) getActivity())
+                                    .onMessageReceived(FTSMessage.newTerminateMessage());
+                        }
                         break;
                     case MSG_UPDATE:
                         Log.d(TAG, "Update message was received");
@@ -179,23 +182,9 @@ public class MessageTransferFragment extends RoboFragment {
 
         start();
         tvPeer.setText(peerId);
-        tvPort.setText(String.valueOf(port));
         if ((clientToServerSocket != null) || (client != null)) {
             tvConnected.setText("Yes!");
         }
-
-        bConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "Connect button pressed. Should we try to connect?");
-                 if ((clientToServerSocket != null) && !clientToServerSocket.isConnected()) {
-                     Log.d(TAG, "Trying to connect the client to the server again");
-                     ClientReaderThread readerThread = new ClientReaderThread();
-                     readerThread.start();
-                     threadPool.add(readerThread);
-                 }
-            }
-        });
     }
 
     /**
@@ -325,11 +314,12 @@ public class MessageTransferFragment extends RoboFragment {
 
             try {
                 //Create a client socket with the host, port, and timeout information.
-                sleep(500);
+//                sleep(500);
                 clientToServerSocket.setReuseAddress(true);
                 clientToServerSocket.bind(null);
                 Log.d(TAG, "Connecting to the client server socket at: " + host + ", " + String.valueOf(port));
                 clientToServerSocket.connect((new InetSocketAddress(host, port)), 500);
+                sendMessageToUI(MSG_CONNECTED);
                 Log.d(TAG, "Connection to server successful");
 
                 outputStream = new ObjectOutputStream(clientToServerSocket.getOutputStream());
@@ -338,11 +328,11 @@ public class MessageTransferFragment extends RoboFragment {
                 Log.d(TAG, "Got the inputStream from the server.");
                 readLoop();
             } catch (FileNotFoundException e) {
-                Log.w(TAG, e.getMessage());
+                if (e.getMessage() != null) Log.w(TAG, e.getMessage());
             } catch (IOException e) {
-                Log.w(TAG, e.getMessage());
-            } catch (InterruptedException e) {
-                Log.w(TAG, e.getMessage());
+                if (e.getMessage() != null) Log.w(TAG, e.getMessage());
+//            } catch (InterruptedException e) {
+//                if (e.getMessage() != null) Log.w(TAG, e.getMessage());
             }
             // Clean up any open sockets when done transferring or if an exception occurred.
             finally {
@@ -369,6 +359,7 @@ public class MessageTransferFragment extends RoboFragment {
                 serverSocket = new ServerSocket(port);
                 Log.e(MainActivity.TAG, "Waiting for a client to connect on port " + String.valueOf(port));
                 client = serverSocket.accept();
+                sendMessageToUI(MSG_CONNECTED);
                 Log.e(MainActivity.TAG, "Successfully connected to a client");
 
                 // Read until SENTINEL is sent
@@ -485,6 +476,7 @@ public class MessageTransferFragment extends RoboFragment {
 
             } catch (IOException e) {
                 Log.e(MainActivity.TAG, "IOException in read loop: " + e.getMessage());
+                sendMessageToUI(MSG_TERMINATE);
                 break;
             } catch (ClassNotFoundException e) {
                 Log.w(MainActivity.TAG, "Something weird happened. Couldn't parse the input stream");

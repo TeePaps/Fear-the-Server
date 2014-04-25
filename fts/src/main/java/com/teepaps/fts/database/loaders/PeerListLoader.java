@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.database.models.Peer;
-import com.teepaps.fts.ui.WifiActivity;
+import com.teepaps.fts.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,13 +57,13 @@ public class PeerListLoader extends AsyncTaskLoader<List<Peer>> {
             // If not seen before, add a new peer
             if (peer == null) {
                 peer = p2pDeviceToPeer(dataSource, device);
-                Log.w(WifiActivity.TAG, "peer.getName() = " + String.valueOf(peer.getPeerId()));
+                Log.w(MainActivity.TAG, "peer.getName() = " + String.valueOf(peer.getPeerId()));
             }
 
-            Log.w(WifiActivity.TAG, "device.deviceAddress = " + String.valueOf(device.deviceAddress));
+            Log.w(MainActivity.TAG, "device.deviceAddress = " + String.valueOf(device.deviceAddress));
             peers.add(peer);
         }
-        Log.w(WifiActivity.TAG, "peers.size() = " + peers.size());
+        Log.w(MainActivity.TAG, "peers.size() = " + peers.size());
 
         return peers;
     }
@@ -166,7 +166,7 @@ public class PeerListLoader extends AsyncTaskLoader<List<Peer>> {
     public static Peer p2pDeviceToPeer(PeerDataSource dataSource, WifiP2pDevice device) {
         // Create an unkeyed peer in the database
         Peer peer = dataSource.createPeer(device.deviceName, device.deviceAddress, null);
-        Log.d(WifiActivity.TAG, "Peer created: " + peer.toString());
+        Log.d(MainActivity.TAG, "Peer created: " + peer.toString());
         return peer;
     }
 }

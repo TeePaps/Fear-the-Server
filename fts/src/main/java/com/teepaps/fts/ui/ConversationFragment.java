@@ -54,7 +54,6 @@ public class ConversationFragment extends ListFragment
         super.onAttach(activity);
         this.listener = (ConversationFragmentListener) activity;
         localMAC = PrefsUtils.getString(getActivity(), PrefsUtils.KEY_MAC, null);
-        initializeListAdapter();
     }
 
     @Override

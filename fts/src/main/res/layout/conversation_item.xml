@@ -35,6 +35,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="Jan 4, 2014 : 3:15pm"
                 android:textColor="#FFFFFF"
@@ -53,6 +54,7 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:gravity="center_vertical"
-            android:background="@android:color/holo_blue_light" />
+            android:layout_marginTop="10dp"
+            android:background="@android:color/darker_gray" />
     </LinearLayout>
 </LinearLayout>

@@ -3,32 +3,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:text="PAST CONVERSATIONS" />
+        android:text="PAST CONVERSATIONS"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
-        android:gravity="center_vertical"
-        android:background="@android:color/holo_blue_light" />
+        android:background="@android:color/holo_blue_light"
+        android:gravity="center_vertical" />
 
-    <ListView android:id="@android:id/list"
-              style="?android:attr/listViewWhiteStyle"
-              android:layout_width="fill_parent"
-              android:layout_height="0dp"
-              android:layout_weight="1.0"
-              android:drawSelectorOnTop="true"
-              android:transcriptMode="normal"
-              android:scrollbarAlwaysDrawVerticalTrack="false"
-              android:scrollbarStyle="insideOverlay"
-              android:fadingEdge="none"
-              android:divider="@android:color/transparent"
-              android:dividerHeight="0dp"
-              android:layout_marginBottom="1dip"
+    <ListView
+        android:id="@android:id/list"
+        style="?android:attr/listViewWhiteStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="1dip"
+        android:layout_weight="1.0"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:drawSelectorOnTop="true"
+        android:fadingEdge="none"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
+        android:scrollbarStyle="insideOverlay"
+        android:transcriptMode="normal"
         tools:listitem="@layout/conversation_list_item" />
 
 </LinearLayout>

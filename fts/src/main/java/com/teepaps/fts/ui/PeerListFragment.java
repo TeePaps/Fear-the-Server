@@ -20,12 +20,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.teepaps.fts.utils.PeerConnectUtil;
 import com.teepaps.fts.R;
 import com.teepaps.fts.adapters.PeerListAdapter;
 import com.teepaps.fts.database.loaders.PeerListLoader;
 import com.teepaps.fts.database.models.Peer;
-import com.teepaps.fts.utils.PrefsUtils;
+import com.teepaps.fts.utils.PeerConnectUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,16 +58,17 @@ public class PeerListFragment extends ListFragment
     ProgressDialog progressDialog = null;
 
     /**
-     * Fragment for connecting to other peers. Using a fragment in case I want a UI.
+     * Util used for connecting to other peers. Using a fragment in case I want a UI.
      */
-    private PeerConnectFragment connectFragment;
-
     private PeerConnectUtil connectUtil;
 
     private String peerId;
+    private LayoutInflater inflater;
+    private boolean isConnecting;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.inflater = inflater;
         return inflater.inflate(R.layout.peer_list_fragment, container, false);
     }
 
@@ -84,17 +84,40 @@ public class PeerListFragment extends ListFragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.listener = (PeerSelectedListener) activity;
+        this.isConnecting = false;
+    }
+
+    @Override
+    public void onDetach() {
+
+        super.onDetach();
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        ViewGroup header = (ViewGroup) inflater
+                .inflate(R.layout.conversation_list_item, getListView(), false);
     }
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
 
+        isConnecting = true;
+        progressDialog = ProgressDialog.show(getActivity(), "Press back to cancel",
+                "Connecting...", true, true
+//                        new DialogInterface.OnCancelListener() {
+//
+//                            @Override
+//                            public void onCancel(DialogInterface dialog) {
+//                                ((DeviceActionListener) getActivity()).cancelDisconnect();
+//                            }
+//                        }
+        );
+
+
         peerId = (String) view.getTag();
         ((PeerSelectedListener) getActivity()).onPeerSelected(peerId);
         Log.d("peer", "OnClick PeerId = " + String.valueOf(peerId));
-//        connectFragment = PeerConnectFragment.newInstance(peerId);
-//        connectUtil = new PeerConnectUtil(getActivity(), peerId);
-
     }
 
     /**
@@ -118,35 +141,37 @@ public class PeerListFragment extends ListFragment
 
     @Override
     public Loader<List<Peer>> onCreateLoader(int id, Bundle args) {
-        Log.w(WifiActivity.TAG, "Creating the loader");
+        Log.w(MainActivity.TAG, "Creating the loader");
         if (deviceList != null) {
-            Log.w(WifiActivity.TAG, "device list size = " + deviceList.size());
+            Log.w(MainActivity.TAG, "device list size = " + deviceList.size());
         }
         return new PeerListLoader(getActivity(), deviceList);
     }
 
     @Override
     public void onLoadFinished(Loader<List<Peer>> listLoader, List<Peer> peers) {
-        Log.w(WifiActivity.TAG, "Finished loading");
+        Log.w(MainActivity.TAG, "Finished loading");
         ((ArrayAdapter) getListAdapter()).addAll(peers);
     }
 
     @Override
     public void onLoaderReset(Loader<List<Peer>> listLoader) {
-        Log.w(WifiActivity.TAG, "Reset the loader");
+        Log.w(MainActivity.TAG, "Reset the loader");
         ((ArrayAdapter) getListAdapter()).clear();
 //        ((ArrayAdapter) getListAdapter()).notifyDataSetChanged();
     }
 
     @Override
     public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
+        if (!isConnecting) {
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            reload(wifiP2pDeviceList);
         }
-        reload(wifiP2pDeviceList);
 
         if (wifiP2pDeviceList.getDeviceList().size() == 0) {
-            Log.d(WifiActivity.TAG, "No devices found");
+            Log.d(MainActivity.TAG, "No devices found");
             return;
         }
     }
@@ -173,6 +198,10 @@ public class PeerListFragment extends ListFragment
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
 
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+
         Log.d("peer", "PeerId = " + String.valueOf(peerId));
         if (peerId == null) {
 //           peerId = "awaiting MAC";
@@ -193,15 +222,6 @@ public class PeerListFragment extends ListFragment
             getActivity().startActivity(intent);
         }
 
-    }
-
-    /**
-     * Update UI for this device.
-     *
-     * @param device WifiP2pDevice object
-     */
-    public void updateThisDevice(WifiP2pDevice device) {
-        PrefsUtils.putString(getActivity(), PrefsUtils.KEY_MAC, device.deviceAddress);
     }
 
     public interface PeerSelectedListener {

@@ -6,7 +6,7 @@ import android.content.Intent;
 
 import com.teepaps.fts.routing.RoutingTable;
 import com.teepaps.fts.services.RoutingTableTransferService;
-import com.teepaps.fts.ui.WifiActivity;
+import com.teepaps.fts.ui.MainActivity;
 
 /**
  * Created by ted on 4/19/14.
@@ -16,12 +16,12 @@ public class RoutingTableBroadcastReceiver extends BroadcastReceiver {
     /**
      * Activity to perform actions on
      */
-    private WifiActivity activity;
+    private MainActivity activity;
 
     /**
      * @param activity activity associated with the receiver
      */
-    public RoutingTableBroadcastReceiver(WifiActivity activity) {
+    public RoutingTableBroadcastReceiver(MainActivity activity) {
         super();
         this.activity = activity;
     }

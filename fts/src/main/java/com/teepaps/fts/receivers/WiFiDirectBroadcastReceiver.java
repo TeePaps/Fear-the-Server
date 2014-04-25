@@ -27,8 +27,8 @@ import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 
 import com.teepaps.fts.R;
+import com.teepaps.fts.ui.MainActivity;
 import com.teepaps.fts.ui.PeerListFragment;
-import com.teepaps.fts.ui.WifiActivity;
 
 /**
  * A BroadcastReceiver that notifies of important wifi p2p events.
@@ -37,7 +37,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private Channel channel;
-    private WifiActivity activity;
+    private MainActivity activity;
 
     /**
      * @param manager WifiP2pManager system service
@@ -45,7 +45,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
      * @param activity activity associated with the receiver
      */
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel,
-                                       WifiActivity activity)
+                                       MainActivity activity)
     {
         super();
         this.manager = manager;
@@ -61,7 +61,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(WifiActivity.TAG, "Action = " + action);
+        Log.d(MainActivity.TAG, "Action = " + action);
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
 
             // UI update to indicate wifi p2p status.
@@ -74,7 +74,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 //                activity.resetData();
 
             }
-            Log.d(WifiActivity.TAG, "P2P state changed - " + state);
+            Log.d(MainActivity.TAG, "P2P state changed - " + state);
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
 
             // request available peers from the wifi p2p manager. This is an
@@ -84,7 +84,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 manager.requestPeers(channel, (PeerListListener) activity.getFragmentManager()
                         .findFragmentById(R.id.fragment_peer_list));
             }
-            Log.d(WifiActivity.TAG, "P2P peers changed");
+            Log.d(MainActivity.TAG, "P2P peers changed");
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
             if (manager == null) {
@@ -98,7 +98,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                 // we are connected with the other device, request connection
                 // info to find group owner IP
-                Log.i(WifiActivity.TAG, "For some reason, this is starting");
+                Log.i(MainActivity.TAG, "For some reason, this is starting");
                 PeerListFragment fragment = (PeerListFragment) activity
                         .getFragmentManager().findFragmentById(R.id.fragment_peer_list);
                 manager.requestConnectionInfo(channel, fragment);
@@ -107,11 +107,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 //                activity.resetData();
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-            PeerListFragment fragment = (PeerListFragment) activity.getFragmentManager()
-                    .findFragmentById(R.id.fragment_peer_list);
-            fragment.updateThisDevice((WifiP2pDevice) intent.getParcelableExtra(
+            activity.updateThisDevice((WifiP2pDevice) intent.getParcelableExtra(
                     WifiP2pManager.EXTRA_WIFI_P2P_DEVICE));
-
         }
     }
 }

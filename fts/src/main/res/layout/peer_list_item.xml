@@ -9,8 +9,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background_conversation_item_received"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -18,10 +18,18 @@
             android:orientation="horizontal"
             android:weightSum="1">
 
+            <ImageView
+                android:id="@+id/icon"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="2dp"
+                android:src="@drawable/machine" />
+
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.9"
+                android:layout_weight="0.7"
                 android:orientation="vertical">
 
                 <TextView
@@ -30,29 +38,51 @@
                     android:layout_height="wrap_content"
                     android:text="Sender device name"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="#000000" />
+                    android:textColor="@android:color/white" />
 
-                <TextView
-                    android:id="@+id/tv_peer_id"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MAC address"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="#000000" />
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MAC Address: "
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/tv_peer_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MAC address"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="@android:color/white" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
+
             <TextView
                 android:id="@+id/tv_peer_cost"
-                android:layout_weight="0.1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:gravity="center"
                 android:text="1"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="#000000"
+                android:textColor="@android:color/white"
                 android:textSize="35dp" />
 
         </LinearLayout>
 
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:background="@android:color/darker_gray"
+            android:gravity="center_vertical" />
     </LinearLayout>
 </LinearLayout>

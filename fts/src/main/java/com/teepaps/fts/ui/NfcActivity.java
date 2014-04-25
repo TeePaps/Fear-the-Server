@@ -31,11 +31,7 @@ import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.common.io.BaseEncoding;
@@ -54,7 +50,6 @@ public class NfcActivity extends Activity {
     private boolean mResumed = false;
     private boolean mWriteMode = false;
     NfcAdapter mNfcAdapter;
-    EditText mNote;
 
     PendingIntent mNfcPendingIntent;
     IntentFilter[] mWriteTagFilters;
@@ -73,9 +68,6 @@ public class NfcActivity extends Activity {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         setContentView(R.layout.nfc_activity);
-        findViewById(R.id.write_tag).setOnClickListener(mTagWriter);
-        mNote = ((EditText) findViewById(R.id.note));
-        mNote.addTextChangedListener(mTextWatcher);
 
         // Handle all of our received NFC intents in this activity.
         mNfcPendingIntent = PendingIntent.getActivity(this, 0,
@@ -105,6 +97,7 @@ public class NfcActivity extends Activity {
             byte[] payload = messages[0].getRecords()[0].getPayload();
             setNoteBody(new String(payload));
             setIntent(new Intent()); // Consume this intent.
+            finish();
         }
         enableNdefExchangeMode();
     }
@@ -121,56 +114,9 @@ public class NfcActivity extends Activity {
         if (!mWriteMode && NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
             NdefMessage[] msgs = getNdefMessages(intent);
             promptForContent(msgs[0]);
-            Toast.makeText(this, "!mWriteMode", Toast.LENGTH_LONG).show();
+            toast("Wrote the key");
         }
-//
-//        // Tag writing mode
-//        if (mWriteMode && NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-//            Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-//            writeTag(getKeyAsNdef(), detectedTag);
-//            Toast.makeText(this, "Other thing", Toast.LENGTH_LONG).show();
-//        }
-        Toast.makeText(this, "Neither thing", Toast.LENGTH_LONG).show();
     }
-
-    private TextWatcher mTextWatcher = new TextWatcher() {
-
-        @Override
-        public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable arg0) {
-            if (mResumed) {
-                mNfcAdapter.setNdefPushMessage(getKeyAsNdef(), NfcActivity.this);
-                Toast.makeText(NfcActivity.this, "mResumed", Toast.LENGTH_LONG).show();
-            }
-        }
-    };
-
-    private View.OnClickListener mTagWriter = new View.OnClickListener() {
-        @Override
-        public void onClick(View arg0) {
-            // Write to a tag for as long as the dialog is shown.
-            disableNdefExchangeMode();
-            enableTagWriteMode();
-
-            new AlertDialog.Builder(NfcActivity.this).setTitle("Touch tag to write")
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            disableTagWriteMode();
-                            enableNdefExchangeMode();
-                        }
-                    }).create().show();
-        }
-    };
 
     private void promptForContent(final NdefMessage msg) {
         new AlertDialog.Builder(this).setTitle("Accept the key?")
@@ -187,7 +133,6 @@ public class NfcActivity extends Activity {
                                 Log.d(TAG, "peer wasn't null. Setting key");
                                 peer.setSharedKey(body);
                                 dataSource.updatePeer(peer);
-//                                finish();
                             }
                             Log.d(TAG, "Peer was null.");
                         }
@@ -202,22 +147,10 @@ public class NfcActivity extends Activity {
     }
 
     private void setNoteBody(String body) {
-        Editable text = mNote.getText();
-        text.clear();
-        text.append(body);
     }
 
-    private NdefMessage getNoteAsNdef() {
-        byte[] textBytes = mNote.getText().toString().getBytes();
-        NdefRecord textRecord = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
-                new byte[] {}, textBytes);
-        return new NdefMessage(new NdefRecord[] {
-                textRecord
-        });
-    }
 
     private NdefMessage getKeyAsNdef() {
-        byte[] textBytes = mNote.getText().toString().getBytes();
         byte[] keyBytes = new byte[0];
         try {
             keyBytes = CryptoUtils.generateKey();
@@ -229,7 +162,6 @@ public class NfcActivity extends Activity {
                     Log.d(TAG, "peer wasn't null. Setting key");
                     peer.setSharedKey(keyBytes);
                     dataSource.updatePeer(peer);
-//                    finish();
                 }
                 Log.d(TAG, "Peer was null.");
             }
