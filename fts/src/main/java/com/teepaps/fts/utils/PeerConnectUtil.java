@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.teepaps.fts;
+package com.teepaps.fts.utils;
 
 import android.app.Activity;
 import android.net.wifi.WpsInfo;

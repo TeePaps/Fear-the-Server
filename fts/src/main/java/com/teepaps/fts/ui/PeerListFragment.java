@@ -20,8 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.teepaps.fts.PeerConnectFragment;
-import com.teepaps.fts.PeerConnectUtil;
+import com.teepaps.fts.utils.PeerConnectUtil;
 import com.teepaps.fts.R;
 import com.teepaps.fts.adapters.PeerListAdapter;
 import com.teepaps.fts.database.loaders.PeerListLoader;

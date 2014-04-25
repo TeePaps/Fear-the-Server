@@ -16,7 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.teepaps.fts.PeerConnectUtil;
+import com.teepaps.fts.utils.PeerConnectUtil;
 import com.teepaps.fts.R;
 import com.teepaps.fts.database.PeerDataSource;
 import com.teepaps.fts.receivers.WiFiDirectBroadcastReceiver;
